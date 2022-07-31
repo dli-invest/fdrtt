@@ -81,10 +81,26 @@ def parse_witai_response(data: str):
                 type_end_line = None
                 found_export = False
                 continue
-
-    result = "".join(matches[-1].get("data"))
-    data = json.loads(result)
-    return data
+    # combine all data results and remove duplicates and merge text
+    final_object = {
+        "speech": {
+            "tokens": []
+        },
+        "text": "",
+    }
+    for match in matches:
+        matchstr = "".join(match.get("data"))
+        transcript_data = json.loads(matchstr)
+        ic(transcript_data)
+        # only append entries that has is final
+        if transcript_data.get("is_final"):
+            # final_object["speech"]["tokens"].append(data)
+            final_object["text"] += transcript_data.get("text", "") + " "
+            # final_object["text"] += data.get("text", "")
+        # else:
+        #     final_status = transcript_data.get("is_final")
+        #     print("not final", final_status)
+    return final_object
 
 def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
     """

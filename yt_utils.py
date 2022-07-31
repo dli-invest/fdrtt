@@ -2,20 +2,38 @@ import subprocess
 import re
 from utils import ic
 
+youtube_livestream_codes = [
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    300,
+    301,
+]
+youtube_mp4_codes = [
+    298,
+    18,
+    22,
+    140,
+    133,
+    134
+]
 
 def get_video_formats(vid_url: str):
     """
     Returns the raw of video formats available for the given video url.
     """
     result = subprocess.run(f"youtube-dl -F {vid_url}", capture_output=True)
-    print("SHOWING RESULTS")
-    print(result.stdout)
+    ic(f"[command] youtube-dl -F {vid_url}")
     return result
 
 def get_video_link(url: str, format_code: str):
     """
     Returns the video link for the given url.
     """
+    ic(f"[command] youtube-dl -f {format_code} -g {url}")
     result = subprocess.run(f"youtube-dl -f {format_code} -g {url}", capture_output=True)
     ic(result)
     return result.stdout.decode("utf-8").replace("\n", "")
@@ -65,7 +83,7 @@ def parse_raw_format_str(raw_format_str: str):
     # extract leading numbers from each line after removing all not digit charcters
     video_formats = [find_first_number_in_str(x) for x in video_formats]
     # remove all Nones from video_formats
-    video_formats = [x for x in video_formats if x is not None]
+    video_formats = [int(x) for x in video_formats if x is not None]
     return video_formats
 
 def parse_video_formats(url: str):
@@ -75,15 +93,26 @@ def parse_video_formats(url: str):
     raw_format_str = get_video_formats(url).stdout.decode("utf-8")
     return parse_raw_format_str(raw_format_str)
 
+# get metadata from youtube-dl
+def get_metadata(url: str):
+    """
+    Returns the metadata of the given url.
+    """
+    result = subprocess.run(f"youtube-dl -j {url}", capture_output=True)
+    ic(f"[command] youtube-dl -j {url}")
+    return result
+
+# consider embedding youtube-dl in python instead of the subprocess parsing
 def main(url: str = "https://www.youtube.com/watch?v=enGbgVLMuw4&ab_channel=YahooFinance"):
     """
     Main function.
     """
     formats = get_video_formats(url)
     data = parse_raw_format_str(formats.stdout.decode("utf-8"))
-    result = get_video_link(url, data[0])
-    ic(result)
-    return data
+    print(data)
+    # result = get_video_link(url, data[0])
+    # ic(result)
+    return
 
 if __name__ == "__main__":
     main()
