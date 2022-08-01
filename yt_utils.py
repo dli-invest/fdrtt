@@ -1,5 +1,7 @@
 import subprocess
 import re
+from typing import List
+import youtube_dl
 from utils import ic
 
 youtube_livestream_codes = [
@@ -114,5 +116,19 @@ def main(url: str = "https://www.youtube.com/watch?v=enGbgVLMuw4&ab_channel=Yaho
     # ic(result)
     return
 
+def get_youtube_meta_data(video_url: str)-> List[dict]:
+     with youtube_dl.YoutubeDL({'outtmpl': '%(id)s.%(ext)s'}) as ydl:
+        info_dict = ydl.extract_info(video_url, download=False)
+        return info_dict
+
+def get_video_metadata(video_url: str = "https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA")-> dict:
+    with youtube_dl.YoutubeDL({'outtmpl': '%(id)s.%(ext)s'}) as ydl:
+        info_dict = ydl.extract_info(video_url, download=False)
+        video_title = info_dict.get('title', None)
+        uploader_id = info_dict.get('uploader_id', None)
+        ic(f"[youtube] {video_title}: {uploader_id}")
+    return info_dict
+
 if __name__ == "__main__":
-    main()
+    get_video_metadata()
+    # main()

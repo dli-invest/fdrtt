@@ -7,3 +7,4 @@ ref
 log.txt
 sample.txt
 *.exe
+.env

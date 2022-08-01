@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 from icecream import ic, colorizedStderrPrint
 
 LOG_FILE = "log.txt"
@@ -25,12 +26,24 @@ def send_discord_file(filename = None, file = None):
             url, files=files
         )
 
-def send_discord_msg(message = None, timestamp = None):
+def send_discord_msg(data):
     url = os.getenv("DISCORD_WEBHOOK")
+    if url == None:
+        print('DISCORD_WEBHOOK Missing')
+        pass
     # TODO figure out how to post to threads
-    data = {}
-    if message != None:
-        data['content'] = f"**{timestamp}**\n{message}"
-        requests.post(
-            url, data=data
+    ic("Trying to send discord message")
+    # try:
+    #     print("TRY TO SEND")
+    r = requests.post(
+            url, json=data
         )
+    data = r.text
+    # except Exception as e:
+    #     ic("FAILED TO SEND MESSAGE")
+    #     print("FAILED TO SEND REQUEST")
+    #     print(e)
+    #     pass
+
+    # exit(1)
+

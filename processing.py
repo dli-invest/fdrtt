@@ -6,7 +6,24 @@ import os
 import requests
 import time
 import json
+import ffmpeg
+import math
+import glob
 from utils import ic
+
+def get_video_length(video_path: str):
+    """
+    Get video length using ffmpeg and return as seconds
+    """
+    duration = ffmpeg.probe(video_path)
+    try:
+        return duration["streams"][0]["duration"]
+    except Exception as e:
+        print(e)
+        exit(1)
+        return None
+
+
 
 def get_video_from_start(url: str, config: dict):
     """
@@ -18,11 +35,13 @@ def get_video_from_start(url: str, config: dict):
     start = config.get("start", 0)
     end = config.get("end", "00:00:10")
     filename = config.get("filename", "livestream01.mp4")
+    # remove all dashes from filename
     ic("Getting video")
     # delete filename if it exists
     if os.path.exists(filename):
         os.remove(filename)
     #  f"-{start}", readd live stream index later
+    
     result = subprocess.run(
     f'ffmpeg -i "{url}" -t {end} {filename}'
     # ["ffmpeg", "-i", f"'{url}'", "-t", end, "-copy", filename]
@@ -79,7 +98,6 @@ def parse_witai_response(data: str):
                 })
                 type_start_line = None
                 type_end_line = None
-                found_export = False
                 continue
     # combine all data results and remove duplicates and merge text
     final_object = {
@@ -118,14 +136,46 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
     except Exception as e:
         return parse_witai_response(r.text)
 
-def transcribe_audio(filename: str):
+def format_seconds(seconds: int):
+    """
+    format seconds to hh:mm:ss
+    """
+    hours = math.floor(seconds / 3600)
+    minutes = math.floor((seconds % 3600) / 60)
+    seconds = seconds % 60
+    return f"{hours}:{minutes}:{seconds}"
+
+def transcribe_audio(filename: str, is_livestream: bool = False):
     """
     Transcribe audio using wit.ai
     """
     mp3_file = filename.replace(".mp4", ".mp3")
     try:
         t1_start = time.perf_counter()
-        convert_mp4_to_mp3(filename)
+        if is_livestream is False:
+            # split mp4 into smaller mp3 files
+            length_in_secs = get_video_length(filename)
+            # round to nearest second 
+            length_in_secs = float(length_in_secs)
+            length_in_secs = math.ceil(length_in_secs)
+            ic(length_in_secs)
+            # split into 4 minute 30 second chunks
+            chunk_length = 4 * 60 + 30
+            # iterate through chunks
+            ic()
+            for i in range(0, math.ceil(length_in_secs /chunk_length)):
+                ic()
+                # get start and end time
+                start = i * chunk_length
+                end = (i + 1) * chunk_length
+                chunk_filename = filename.replace(".mp4", f"_{i}.mp3")
+                # -vn", filename.replace(".mp4", ".mp3")
+                os.system(f"ffmpeg -y -i {filename} -ss {format_seconds(start)} -t {format_seconds(end)} -vn {chunk_filename}")
+            else:
+                ic("No chunks to process for video")
+            # convert_mp4_to_mp3(filename)
+        else:
+            convert_mp4_to_mp3(filename)
         t2_start = time.perf_counter()
         ic(f"[timing] Converted mp4 to mp3 in {t2_start - t1_start} seconds")
     except Exception as e:
@@ -133,11 +183,28 @@ def transcribe_audio(filename: str):
         ic(e)
         return None
 
+    # TODO refactor this logic tommorow to be a specific function
     try:
-        data = get_text_from_mp3(mp3_file)
-        t2_end = time.perf_counter()
-        ic(f"[timing] Got text from mp3 in {t2_end - t2_start} seconds")
-        return data
+        if is_livestream == True:
+            # iterate through files with _{d} format
+            final_object = {
+                "speech": {
+                    "tokens": []
+                },
+                "text": "",
+            }
+            for file in glob.glob(f"{filename.replace('.mp4', '_*.mp3')}"):
+                # get text from mp3
+                partial_object = get_text_from_mp3(file)
+                # append to final object
+                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + partial_object["speech"]["tokens"]
+                final_object["text"] += partial_object["text"]
+            return final_object
+        else:
+            data = get_text_from_mp3(mp3_file)
+            t2_end = time.perf_counter()
+            ic(f"[timing] Got text from mp3 in {t2_end - t2_start} seconds")
+            return data
     except Exception as e:
         ic(f"Error getting text from mp3 for {filename}")
         ic(e)
@@ -147,10 +214,11 @@ def main():
     # data = get_text_from_mp3("livestream5.mp3")
     # print(data)
     # read file from livestream9.json
-    with open("livestream9.json") as f:
-        data = f.readlines()
-        data = "".join(data)
-        resp = parse_witai_response(data)
+    duration = get_video_length("livestream01.mp4")
+    # with open("livestream9.json") as f:
+    #     data = f.readlines()
+    #     data = "".join(data)
+    #     resp = parse_witai_response(data)
 
 if __name__ == "__main__":
     main()
