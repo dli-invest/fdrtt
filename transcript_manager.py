@@ -177,13 +177,11 @@ def main(url:str):
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
-    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=ZD42JsHjjMc&ab_channel=CNBCTelevision')
+    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     if os.environ.get("WIT_AI_TOKEN") is None:
         print("WIT_AI_TOKEN is not set")
         exit(1)
-    if args.url == "" or args.url is None:
-        main("https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals")
     main(args.url)
     pass
