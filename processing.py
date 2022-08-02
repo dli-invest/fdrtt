@@ -56,16 +56,20 @@ def convert_mp4_to_mp3(filename: str):
     Convert mp4 to mp3 using ffmpeg
     """
     ic("Converting mp4 to mp3")
-    result = subprocess.run(
-        ["ffmpeg", "-i", filename, "-vn", filename.replace(".mp4", ".mp3")],
-         capture_output=True,
-         shell=True,
-    )
-    ic(result)
-    # throw error if result is not successful
-    if result.returncode != 0:
+    try:
+        result = subprocess.run(
+            ["ffmpeg", "-i", filename, "-vn", filename.replace(".mp4", ".mp3")],
+            shell=True,
+        )
+        ic(result)
+        # throw error if result is not successful
         raise Exception(result.stdout.decode("utf-8"))
-    return result.stdout.decode("utf-8")
+    except Exception as e:
+        result = subprocess.run(
+            "ffmpeg -i {filename} -vn {filename}.mp3".format(filename=filename),
+            shell=True,
+        )
+    return result
 
 
 # parse all the partial json responses and attempt to find the last one
@@ -171,6 +175,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 end = (i + 1) * chunk_length
                 chunk_filename = filename.replace(".mp4", f"_{i}.mp3")
                 # -vn", filename.replace(".mp4", ".mp3")
+                # todo integrate directly using ffmpeg python binders
                 os.system(f"ffmpeg -y -i {filename} -ss {format_seconds(start)} -t {format_seconds(end)} -vn {chunk_filename}")
             else:
                 ic("No chunks to process for video")
