@@ -6,7 +6,7 @@ from icecream import ic, colorizedStderrPrint
 LOG_FILE = "log.txt"
 def writeToLog(s):
     # write to log file
-    colorizedStderrPrint(s)
+    # colorizedStderrPrint(s)
     with open(LOG_FILE, "a") as f:
         f.write(s)
         f.write("\n")
@@ -47,3 +47,12 @@ def send_discord_msg(data):
 
     # exit(1)
 
+
+def writeToLogAndPrint(s: str):
+    try:
+        writeToLog(s)
+        print(s)
+    except Exception as e:
+        ic()
+        ic("Failedto write to log and print")
+        print(e)

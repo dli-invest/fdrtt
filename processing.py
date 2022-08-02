@@ -9,7 +9,7 @@ import json
 import ffmpeg
 import math
 import glob
-from utils import ic
+from utils import ic, writeToLogAndPrint
 
 def get_video_length(video_path: str):
     """
@@ -129,7 +129,7 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
         WIT_AT_DATA = f.read()
     r = requests.post(WIT_AT_ENDPOINT, headers=WIT_AT_HEADERS, data=WIT_AT_DATA)
     try:
-        ic(r.text)
+        writeToLogAndPrint(r.text)
         data = r.json()
         return data
     except Exception as e:
