@@ -1,19 +1,12 @@
 # produce yaml file cron job
 name: Transcribe video
 on:
-  workflow_dispatch:
-    inputs:
-      youtube_url:
-        description: 'Url to youtube video'     
-        required: true
-        default: 'warning' 
-  push:
-    branches:
-      - 'main'
-      - "feature/*"
-    paths-ignore:
-      - "*.md"
-      - "*.txt"
+  - workflow_dispatch:
+      inputs:
+        youtube_url:
+          description: 'Url to youtube video'     
+          required: true
+          default: 'warning' 
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
