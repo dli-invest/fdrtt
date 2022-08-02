@@ -37,6 +37,8 @@ jobs:
       - uses: FedericoCarboni/setup-ffmpeg@v1
         with:
           path: ./
+          ffmpeg-path: "./"
+          ffprobe-path: "./"
         # same as GITHUB_WORKSPACE 
         id: setup-ffmpeg
       - run: ffmpeg -version
