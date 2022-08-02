@@ -8,7 +8,7 @@ from processing import get_video_from_start, transcribe_audio, get_video_length
 from utils import ic, send_discord_msg
 from yt_utils import get_video_formats, get_video_link, get_video_metadata, parse_raw_format_str, youtube_livestream_codes, youtube_mp4_codes
 
-MAX_ITERATIONS = 10
+MAX_ITERATIONS = 30
 CHUNK_SIZE = 1900
 # free delayed real time transcription
 
@@ -150,7 +150,7 @@ class FD_RTT:
                 filename = f"{metadata.get('id', '')}_{iterations}.mp4"
                 filename = filename.replace("-", "")
                 get_video_from_start(format_url, {
-                    "end": 40,
+                    "end": "0:04:30",
                     "filename": filename,
                 })
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
