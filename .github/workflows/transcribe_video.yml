@@ -43,6 +43,7 @@ jobs:
       - name: Transcribe without url
         if: "${{ github.event.inputs.level == '' }}"
         run: python transcript_manager.py
+        
       - name: Commit files
         run: |
           if [[ -z $(git status -s) ]]
