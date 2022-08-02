@@ -56,19 +56,12 @@ def convert_mp4_to_mp3(filename: str):
     Convert mp4 to mp3 using ffmpeg
     """
     ic("Converting mp4 to mp3")
-    try:
-        result = subprocess.run(
-            ["ffmpeg", "-i", filename, "-vn", filename.replace(".mp4", ".mp3")],
-            shell=True,
-        )
-        ic(result)
-        # throw error if result is not successful
-        raise Exception(result.stdout.decode("utf-8"))
-    except Exception as e:
-        result = subprocess.run(
-            "ffmpeg -i {filename} -vn {filename}.mp3".format(filename=filename),
-            shell=True,
-        )
+    mp4_filename = filename.replace(".mp4", f".mp3")
+    result = subprocess.run(
+        f"ffmpeg -i {filename} -vn {mp4_filename}",
+        shell=True,
+    )
+    ic(result)
     return result
 
 
@@ -136,6 +129,7 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
         WIT_AT_DATA = f.read()
     r = requests.post(WIT_AT_ENDPOINT, headers=WIT_AT_HEADERS, data=WIT_AT_DATA)
     try:
+        ic(r.text)
         data = r.json()
         return data
     except Exception as e:
