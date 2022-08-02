@@ -183,5 +183,7 @@ if __name__ == "__main__":
     if os.environ.get("WIT_AI_TOKEN") is None:
         print("WIT_AI_TOKEN is not set")
         exit(1)
+    if args.url == "" or args.url is None:
+        main("https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals")
     main(args.url)
     pass
