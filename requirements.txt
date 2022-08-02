@@ -1,3 +1,4 @@
 youtube-dl
 ffmpeg-python
 requests
+icecream

@@ -1,5 +1,7 @@
 # Real time cheap as heck transcription service
 
+[![Transcribe video](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/badge.svg)](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml)
+
 
 ## Components
 
