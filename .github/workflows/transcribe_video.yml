@@ -7,13 +7,13 @@ on:
         description: 'Url to youtube video'     
         required: true
         default: 'warning' 
-  push:
-    branches:
-      - 'main'
-      - "feature/*"
-    paths-ignore:
-      - "*.md"
-      - "*.txt"
+  # push:
+  #   branches:
+  #     - 'main'
+  #     - "feature/*"
+  #   paths-ignore:
+  #     - "*.md"
+  #     - "*.txt"
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_DAILY_REVIEW_WEBHOOK }}
