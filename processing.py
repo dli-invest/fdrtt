@@ -45,7 +45,7 @@ def get_video_from_start(url: str, config: dict):
     result = subprocess.run(
     f'ffmpeg -i "{url}" -t {end} {filename}'
     # ["ffmpeg", "-i", f"'{url}'", "-t", end, "-copy", filename]
-    , capture_output=True)
+    , shell=True, capture_output=True)
     ic(result)
     return result.stdout.decode("utf-8")
 
@@ -58,7 +58,8 @@ def convert_mp4_to_mp3(filename: str):
     ic("Converting mp4 to mp3")
     result = subprocess.run(
         ["ffmpeg", "-i", filename, "-vn", filename.replace(".mp4", ".mp3")],
-         capture_output=True
+         capture_output=True,
+         shell=True,
     )
     ic(result)
     # throw error if result is not successful
