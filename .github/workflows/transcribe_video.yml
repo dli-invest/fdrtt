@@ -1,6 +1,12 @@
 # produce yaml file cron job
 name: Transcribe video
 on:
+  workflow_dispatch:
+    inputs:
+      youtube_url:
+        description: 'Url to youtube video'     
+        required: true
+        default: 'warning' 
   push:
     branches:
       - 'main'
@@ -11,18 +17,11 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron:  '10 2-18/2 * * 1-5'
 
-  workflow_dispatch:
-    inputs:
-      youtube_url:
-        description: 'youtube_url'     
-        required: true
-        default: 'warning' 
-
 env:
-  FAUNA_SECRET: ${{ secrets.FAUNA_AI_ACCESS_TOKEN }}
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_DAILY_REVIEW_WEBHOOK }}
-  DISCORD_CRITICAL_WEBHOOK: ${{ secrets.DISCORD_CRITICAL_WEBHOOK }}
+  WIT_AI_TOKEN: ${{ secrets.WIT_AI_TOKEN }}
 # Add cron job to ensure external webpages + apis have no changed
+
 jobs:
   scrap_data:
     runs-on: ubuntu-latest
