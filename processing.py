@@ -185,7 +185,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
 
     # TODO refactor this logic tommorow to be a specific function
     try:
-        if is_livestream == True:
+        if is_livestream == False:
             # iterate through files with _{d} format
             final_object = {
                 "speech": {
@@ -193,7 +193,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 },
                 "text": "",
             }
-            for file in glob.glob(f"{filename.replace('.mp4', '_*.mp3')}"):
+            filename_no_ext = filename.replace(".mp4", "")
+            for file in glob.glob(f"{filename_no_ext}_*.mp3"):  
                 # get text from mp3
                 partial_object = get_text_from_mp3(file)
                 # append to final object
@@ -214,7 +215,8 @@ def main():
     # data = get_text_from_mp3("livestream5.mp3")
     # print(data)
     # read file from livestream9.json
-    duration = get_video_length("livestream01.mp4")
+    # duration = get_video_length("livestream01.mp4")
+    get_text_from_mp3("dp8PhLsUcFE_0.mp3")
     # with open("livestream9.json") as f:
     #     data = f.readlines()
     #     data = "".join(data)
