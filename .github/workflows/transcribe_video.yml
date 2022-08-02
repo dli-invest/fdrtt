@@ -35,15 +35,13 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
       - uses: FedericoCarboni/setup-ffmpeg@v1
-      # use github.events.inputs.youtube_url if available
-      - run: 
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
 
-      - name: Print message if empty
+      - name: Transcribe without url
         if: "${{ github.event.inputs.level == '' }}"
-        run: python transcript_manager.py --url
+        run: python transcript_manager.py
         name: Transcribe video 
       - name: Commit files
         run: |
