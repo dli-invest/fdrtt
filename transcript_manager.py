@@ -65,8 +65,6 @@ class FD_RTT:
         """
         Send metadata embed to discord
         """
-        # send_discord_msg(metadata)
-        data = {}
         # data = {
         #     "embeds": [{
         #          "title": "test",
@@ -77,23 +75,21 @@ class FD_RTT:
         url = other_data.get("url", "")
         embed = {
             "title": f"{metadata.get('title', '')}",
-            "description": metadata.get("description", "")[0:500],
-            # "type": "rich",
+            "description": metadata.get("description", "")[:500],
             "url": url,
-            "thumbnail": {
-                "url": metadata.get("thumbnail", "")
-            },
-            "fields": [{
-                "name": "Livestream",
-                "value": other_data.get("is_livestream", ""),
-                "inline": True
-            }]
-            # "color": "0x00ff00",
+            "thumbnail": {"url": metadata.get("thumbnail", "")},
+            "fields": [
+                {
+                    "name": "Livestream",
+                    "value": other_data.get("is_livestream", ""),
+                    "inline": True,
+                }
+            ],
         }
-        data["embeds"] = [embed]
+
+        data = {"embeds": [embed]}
         ic("Sending metadata embed")
         send_discord_msg(data)
-        pass
 
     def process_video(self, ytube_url: str = "https://www.youtube.com/watch?v=86YLFOog4GM&ab_channel=SpaceVideos"):
         """
@@ -113,13 +109,12 @@ class FD_RTT:
         # youtube id from metadata and extension and number
         livestream_entries = list(set(format_ids).intersection(youtube_livestream_codes))
         is_livestream = True
-        if len(livestream_entries) > 0:
+        if livestream_entries:
             # get the first one
             livestream_entries.sort()
             selected_id = livestream_entries[0]
         else:
-            video_entries = list(set(format_ids).intersection(youtube_mp4_codes))
-            video_entries.sort()
+            video_entries = sorted(set(format_ids).intersection(youtube_mp4_codes))
             selected_id = video_entries[0]
             is_livestream = False
 
@@ -131,7 +126,7 @@ class FD_RTT:
                 # grab format from formats using format_id
                 selected_format = [f for f in formats if f.get("format_id", "") == str(selected_id)][0]
                 format_url = selected_format.get("url", "")
-                if is_livestream == False:
+                if not is_livestream:
                     filename = f"{metadata.get('id', '')}.mp4"
                     filename = filename.replace("-", "")
                     # get video from start
@@ -140,11 +135,11 @@ class FD_RTT:
                                 "end": "0:15:00",
                                 "filename": filename
                             })
-                 
+
                     # transcribe audio
                     self.transcribe({"filename": filename, "is_livestream": is_livestream})
                     break
-                ic("Iteration: {}".format(self.stats.get("iterations", 0)))
+                ic(f'Iteration: {self.stats.get("iterations", 0)}')
                 ic(format_url)
                 iterations = self.stats.get("iterations", 0)
                 filename = f"{metadata.get('id', '')}_{iterations}.mp4"
@@ -155,9 +150,9 @@ class FD_RTT:
                 })
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
                 background_thread.start()
-                # background_thread.join()
-                # process video here
-                # update iteration in stats
+                        # background_thread.join()
+                        # process video here
+                        # update iteration in stats
             except Exception as e:
                 ic(e)
             finally:
@@ -186,4 +181,3 @@ if __name__ == "__main__":
     if args.url == "" or args.url is None:
         main("https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals")
     main(args.url)
-    pass
