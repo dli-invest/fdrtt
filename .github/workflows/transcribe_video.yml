@@ -7,16 +7,16 @@ on:
         description: 'Url to youtube video'     
         required: true
         default: 'warning' 
-  # push:
-  #   branches:
-  #     - 'main'
-  #     - "feature/*"
-  #   paths-ignore:
-  #     - "*.md"
-  #     - "*.txt"
+  push:
+    branches:
+      - 'main'
+      - "feature/*"
+    paths-ignore:
+      - "*.md"
+      - "*.txt"
 
 env:
-  DISCORD_WEBHOOK: ${{ secrets.DISCORD_DAILY_REVIEW_WEBHOOK }}
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
   WIT_AI_TOKEN: ${{ secrets.WIT_AI_TOKEN }}
 # Add cron job to ensure external webpages + apis have no changed
 
