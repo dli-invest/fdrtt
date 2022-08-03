@@ -1,5 +1,5 @@
 # produce yaml file cron job
-name: Transcribe video
+name: Transcribe
 on:
   workflow_dispatch:
     inputs:
@@ -7,6 +7,10 @@ on:
         description: 'Url to youtube video'     
         required: true
         default: 'warning' 
+      iteration:
+        description: 'Iteration number'
+        required: false
+        default: 1
   push:
     branches:
       - 'main'
@@ -18,12 +22,13 @@ on:
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
   WIT_AI_TOKEN: ${{ secrets.WIT_AI_TOKEN }}
+  GH_WORKFLOW_TOKEN: ${{ secrets.GH_WORKFLOW_TOKEN }}
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
   scrap_data:
     runs-on: ubuntu-latest
-    name: beneath
+    name: transcribe video
 
     steps:
       - uses: actions/checkout@v2
@@ -35,9 +40,20 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
       - uses: FedericoCarboni/setup-ffmpeg@v1
-      # use github.events.inputs.youtube_url if available
-      - run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
-        name: Transcribe video 
+        # same as GITHUB_WORKSPACE 
+        id: setup-ffmpeg
+
+      - name: Where are files?
+        run: ls
+      - name: Transcribe with url
+        if: "${{ github.event.inputs.youtube_url != '' }}"
+        run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
+
+      # for master/main only use
+      - name: Transcribe without url
+        if: "${{ github.event.inputs.level == '' }}"
+        run: python transcript_manager.py
+        
       - name: Commit files
         run: |
           if [[ -z $(git status -s) ]]
@@ -64,3 +80,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      - name: rerun workflow
+        run:
+          python dispatch_another_event.py
