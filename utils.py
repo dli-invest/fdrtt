@@ -47,3 +47,12 @@ def send_discord_msg(data):
 
     # exit(1)
 
+
+def writeToLogAndPrint(s: str):
+    try:
+        writeToLog(s)
+        print(s)
+    except Exception as e:
+        ic()
+        ic("Failedto write to log and print")
+        print(e)

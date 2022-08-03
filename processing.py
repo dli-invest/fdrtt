@@ -9,7 +9,7 @@ import json
 import ffmpeg
 import math
 import glob
-from utils import ic
+from utils import ic, writeToLogAndPrint
 
 def get_video_length(video_path: str):
     """
@@ -45,7 +45,7 @@ def get_video_from_start(url: str, config: dict):
     result = subprocess.run(
     f'ffmpeg -i "{url}" -t {end} {filename}'
     # ["ffmpeg", "-i", f"'{url}'", "-t", end, "-copy", filename]
-    , capture_output=True)
+    , shell=True, capture_output=True)
     ic(result)
     return result.stdout.decode("utf-8")
 
@@ -56,15 +56,13 @@ def convert_mp4_to_mp3(filename: str):
     Convert mp4 to mp3 using ffmpeg
     """
     ic("Converting mp4 to mp3")
+    mp4_filename = filename.replace(".mp4", f".mp3")
     result = subprocess.run(
-        ["ffmpeg", "-i", filename, "-vn", filename.replace(".mp4", ".mp3")],
-         capture_output=True
+        f"ffmpeg -i {filename} -vn {mp4_filename}",
+        shell=True,
     )
     ic(result)
-    # throw error if result is not successful
-    if result.returncode != 0:
-        raise Exception(result.stdout.decode("utf-8"))
-    return result.stdout.decode("utf-8")
+    return result
 
 
 # parse all the partial json responses and attempt to find the last one
@@ -131,6 +129,7 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
         WIT_AT_DATA = f.read()
     r = requests.post(WIT_AT_ENDPOINT, headers=WIT_AT_HEADERS, data=WIT_AT_DATA)
     try:
+        writeToLogAndPrint(r.text)
         data = r.json()
         return data
     except Exception as e:
@@ -170,6 +169,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 end = (i + 1) * chunk_length
                 chunk_filename = filename.replace(".mp4", f"_{i}.mp3")
                 # -vn", filename.replace(".mp4", ".mp3")
+                # todo integrate directly using ffmpeg python binders
                 os.system(f"ffmpeg -y -i {filename} -ss {format_seconds(start)} -t {format_seconds(end)} -vn {chunk_filename}")
             else:
                 ic("No chunks to process for video")
@@ -185,7 +185,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
 
     # TODO refactor this logic tommorow to be a specific function
     try:
-        if is_livestream == True:
+        if is_livestream == False:
             # iterate through files with _{d} format
             final_object = {
                 "speech": {
@@ -193,7 +193,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 },
                 "text": "",
             }
-            for file in glob.glob(f"{filename.replace('.mp4', '_*.mp3')}"):
+            filename_no_ext = filename.replace(".mp4", "")
+            for file in glob.glob(f"{filename_no_ext}_*.mp3"):  
                 # get text from mp3
                 partial_object = get_text_from_mp3(file)
                 # append to final object
@@ -214,7 +215,8 @@ def main():
     # data = get_text_from_mp3("livestream5.mp3")
     # print(data)
     # read file from livestream9.json
-    duration = get_video_length("livestream01.mp4")
+    # duration = get_video_length("livestream01.mp4")
+    get_text_from_mp3("dp8PhLsUcFE_0.mp3")
     # with open("livestream9.json") as f:
     #     data = f.readlines()
     #     data = "".join(data)
