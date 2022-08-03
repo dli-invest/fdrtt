@@ -83,4 +83,8 @@ jobs:
 
       - name: rerun workflow
         run:
+<<<<<<< Updated upstream
           python dispatch_another_event.py
+=======
+          python dispatch_another_event.py --youtube-url ${{ github.event.inputs.youtube_url }} --iteration ${{ github.event.inputs.iteration }}
+>>>>>>> Stashed changes

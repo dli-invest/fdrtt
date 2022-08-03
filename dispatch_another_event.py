@@ -16,17 +16,18 @@ curl \
 # parse arguments
 parser = argparse.ArgumentParser(description='Dispatch a workflow event')
 parser.add_argument('-url', '--youtube_url', help='youtube_url', required=True)
-parser.add_argument('-iteration', '--iteration', help='iteration', required=True)
+parser.add_argument('-i', '--iteration', help='iteration', required=True)
 
 args = parser.parse_args()
 token = os.environ.get("GH_WORKFLOW_TOKEN", "")
-url = "https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/TranscribeVid/dispatches"
+url = "https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches"
 headers = {
     "Accept": "application/vnd.github.v3+json",
     "Authorization": f"token {token}",
 }
 # get ${{ github.event.inputs.youtube_url }} from env vars
 data = {
+    "ref": "main",
     "inputs": {
         "youtube_url": args.youtube_url,
         "iteration": args.iteration,
