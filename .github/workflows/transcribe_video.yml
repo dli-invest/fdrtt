@@ -51,7 +51,7 @@ jobs:
 
       # for master/main only use
       - name: Transcribe without url
-        if: "${{ github.event.inputs.level == '' }}"
+        if: "${{ github.event.inputs.youtube_url == '' }}"
         run: python transcript_manager.py
         
       - name: Commit files
