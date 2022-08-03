@@ -16,10 +16,8 @@ ic.configureOutput(outputFunction=writeToLog)
 
 def send_discord_file(filename = None, file = None):
     url = os.getenv("DISCORD_WEBHOOK")
-    if url == None:
+    if url is None:
         print('DISCORD_WEBHOOK Missing')
-        pass
-
     files = {'file': (filename, file, 'application/json')}
     if filename != None and file != None:
         requests.post(
@@ -28,9 +26,8 @@ def send_discord_file(filename = None, file = None):
 
 def send_discord_msg(data):
     url = os.getenv("DISCORD_WEBHOOK")
-    if url == None:
+    if url is None:
         print('DISCORD_WEBHOOK Missing')
-        pass
     # TODO figure out how to post to threads
     ic("Trying to send discord message")
     # try:
