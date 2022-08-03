@@ -36,5 +36,3 @@ data = {
 r = requests.post(url, headers=headers, json=data)
 print(r.text)
 print(r.status_code)
-print(r.headers)
-print(r.json())
