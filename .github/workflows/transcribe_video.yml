@@ -82,5 +82,6 @@ jobs:
           branch: ${{ github.ref }}
 
       - name: rerun workflow
+        if: "${{ github.event.inputs.youtube_url != '' }}"
         run:
           python dispatch_another_event.py --youtube-url ${{ github.event.inputs.youtube_url }} --iteration ${{ github.event.inputs.iteration }}

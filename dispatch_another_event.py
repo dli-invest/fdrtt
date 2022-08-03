@@ -16,7 +16,7 @@ curl \
 # parse arguments
 parser = argparse.ArgumentParser(description='Dispatch a workflow event')
 parser.add_argument('-url', '--youtube_url', help='youtube_url', required=True)
-parser.add_argument('-i', '--iteration', help='iteration', required=True)
+parser.add_argument('-i', '--iteration', help='iteration', required=False, default=0)
 
 args = parser.parse_args()
 token = os.environ.get("GH_WORKFLOW_TOKEN", "")
