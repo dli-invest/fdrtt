@@ -45,6 +45,11 @@ jobs:
 
       - name: Where are files?
         run: ls
+
+      - name: Set env vars
+        run: |
+          ITERATION=${{ github.event.inputs.iteration }} 
+          YOUTUBE_URL=${{ github.event.inputs.youtube_url }}
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"

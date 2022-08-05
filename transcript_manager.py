@@ -8,8 +8,9 @@ from processing import get_video_from_start, transcribe_audio, get_video_length
 from utils import ic, send_discord_msg
 from yt_utils import get_video_formats, get_video_link, get_video_metadata, parse_raw_format_str, youtube_livestream_codes, youtube_mp4_codes
 
-MAX_ITERATIONS = 1
+MAX_ITERATIONS = 60
 CHUNK_SIZE = 1900
+VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
 
 
@@ -40,6 +41,12 @@ class FD_RTT:
             partial_output = filename.replace(".mp4", ".json")
             # adjust all run times here based on runtime
             curr_run_time = f"{self.stats['run_time']:.2f}"
+            global_iteration = os.getenv("ITERATION", 0)
+            if int(global_iteration) > 0:
+                curr_total_time = int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
+                curr_run_time = f"{curr_total_time:.2f}"
+            else:
+                curr_run_time = f"{self.stats['run_time']:.2f}"
             # adjust times in tokens under data
             # TODO fix this for the speech section
             for token in data.get("tokens", []):
@@ -53,6 +60,7 @@ class FD_RTT:
             text = data.get("text", "")
             # make function to convert seconds to human readable time
             data = {}
+            # adjust runtime based on iteration if available
             data['content'] = f"**{curr_run_time}**\n{text}"
             # split data content into chunks of 1900 characters
             chunks = [data['content'][i:i+CHUNK_SIZE] for i in range(0, len(data['content']), CHUNK_SIZE)]
@@ -73,8 +81,9 @@ class FD_RTT:
         # format_id = other_data.get("format_id", "")
         # get youtube video from link
         url = other_data.get("url", "")
+        iteration = os.getenv("ITERATION", 0)
         embed = {
-            "title": f"{metadata.get('title', '')}",
+            "title": f"{metadata.get('title', '')} - {iteration}",
             "description": metadata.get("description", "")[:500],
             "url": url,
             "thumbnail": {"url": metadata.get("thumbnail", "")},
@@ -144,6 +153,7 @@ class FD_RTT:
                 iterations = self.stats.get("iterations", 0)
                 filename = f"{metadata.get('id', '')}_{iterations}.mp4"
                 filename = filename.replace("-", "")
+                # format_seconds(4*60+30)
                 get_video_from_start(format_url, {
                     "end": "0:04:30",
                     "filename": filename,
@@ -161,6 +171,13 @@ class FD_RTT:
                 self.stats["run_time"] = (time.time() - start_time)
                 ic(self.stats)
                 # break
+
+        global_iteration = os.getenv("ITERATION", 0)
+        if int(global_iteration) > 0:
+            total_data = {
+                "content": f"**Total Run Time**{int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time']}",
+            }
+            send_discord_msg(total_data)
         return mp4_formats
 
 def main(url:str):
