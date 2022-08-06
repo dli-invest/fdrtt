@@ -15,7 +15,7 @@ class TranscriptManager(unittest.TestCase):
         mock_send_discord_msg.assert_called_once()
 
     @mock.patch('requests.post', side_effect=mocked_requests_post)
-    def test_process_video(self):
+    def test_process_video(self, mock_request):
         self.fd_rtt.process_video()
         self.assertTrue(True)
 
