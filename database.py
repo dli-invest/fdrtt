@@ -34,7 +34,7 @@ class DB_MANAGER:
     def clear_table(video_id: str):
         db = DB_MANAGER.connect_to_db()
         cursor = db.cursor()
-        cursor.execute(f"DELETE FROM {video_id}")
+        cursor.execute(f"DROP TABLE {video_id}")
         db.commit()
         db.close()
 
