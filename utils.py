@@ -14,6 +14,7 @@ def writeToLog(s):
 
 ic.configureOutput(outputFunction=writeToLog)
 
+# dont need test cases for this
 def send_discord_file(filename = None, file = None):
     url = os.getenv("DISCORD_WEBHOOK")
     if url == None:
