@@ -14,6 +14,7 @@ class TranscriptManager(unittest.TestCase):
         self.fd_rtt.send_metadata_embed({"id": "KWMqeJiIiMo"}, {"format_id": "mp4", "url": "https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist", "is_livestream": False})
         mock_send_discord_msg.assert_called_once()
 
+    @mock.patch('requests.post', side_effect=mocked_requests_post)
     def test_process_video(self):
         self.fd_rtt.process_video()
         self.assertTrue(True)
