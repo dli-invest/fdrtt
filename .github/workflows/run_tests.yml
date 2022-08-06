@@ -4,7 +4,8 @@ on:
     branches:
       - 'main'
       - 'feature/*'
-
+env:
+  DISCORD_WEBHOOK: " "
 # Add cron job to ensure external webpages + apis have no changed
 jobs:
   run_tests:
@@ -35,7 +36,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          file: coverage.xml
+          file: coverage
           flags: ga_ci
           env_vars: PYTHON,OS
           fail_ci_if_error: true
