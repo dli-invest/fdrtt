@@ -14,7 +14,8 @@ class DB_MANAGER_TESTS(unittest.TestCase):
         self.assertTrue(True)
 
     def test_clear_table(self):
-        self.db_manager.clear_table("KWMqeJiIiMo")
+        self.db_manager.create_tables("test")
+        self.db_manager.clear_table("test")
         self.assertTrue(True)
 
 if __name__ == '__main__':
