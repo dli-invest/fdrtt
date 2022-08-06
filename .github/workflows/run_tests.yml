@@ -12,7 +12,7 @@ env:
   # DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
   DB_NAME: streaming_audio_test
   DB_USER: gh_actions
-  DB_HOST: 127.0.0.1
+  DB_HOST: 0.0.0.0
   DB_PASSWORD: password
 
 # Add cron job to ensure external webpages + apis have no changed
