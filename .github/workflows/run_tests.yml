@@ -6,14 +6,14 @@ on:
       - 'feature/*'
 env:
   DISCORD_WEBHOOK: " "
-  # DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
-  # DB_USER: ${{ secrets.PSCALE_DB_USER }}
-  # DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
-  # DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
-  DB_NAME: streaming_audio_test
-  DB_USER: gh_actions
-  DB_HOST: 127.0.0.1
-  DB_PASSWORD: password
+  DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
+  DB_USER: ${{ secrets.PSCALE_DB_USER }}
+  DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
+  DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
+  # DB_NAME: streaming_audio_test
+  # DB_USER: gh_actions
+  # DB_HOST: 127.0.0.1
+  # DB_PASSWORD: password
 
 # Add cron job to ensure external webpages + apis have no changed
 jobs:
