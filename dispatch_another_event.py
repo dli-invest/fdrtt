@@ -30,7 +30,7 @@ data = {
     "ref": "main",
     "inputs": {
         "youtube_url": args.youtube_url,
-        "iteration": args.iteration,
+        "iteration": args.iteration + 1,
     },
 }
 r = requests.post(url, headers=headers, json=data)
