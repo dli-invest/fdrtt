@@ -6,7 +6,7 @@ on:
       youtube_url:
         description: 'Url to youtube video'     
         required: true
-        default: 'warning' 
+        default: 'https://www.youtube.com/watch?v=dp8PhLsUcFE' 
       iteration:
         description: 'Iteration number'
         required: false
