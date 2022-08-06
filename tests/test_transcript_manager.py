@@ -16,7 +16,7 @@ class TranscriptManager(unittest.TestCase):
 
     @mock.patch('requests.post', side_effect=mocked_requests_post)
     def test_process_video(self, mock_request):
-        self.fd_rtt.process_video("https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist")
+        self.fd_rtt.process_video("https://www.youtube.com/watch?v=u88EmaRrIlU&ab_channel=BNNBloomberg")
         self.assertTrue(True)
 
 if __name__ == '__main__':
