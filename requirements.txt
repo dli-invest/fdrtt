@@ -2,3 +2,4 @@ youtube-dl
 ffmpeg-python
 requests
 icecream
+mysql-connector-python
