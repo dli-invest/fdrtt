@@ -37,6 +37,6 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           file: coverage
-          flags: ga_ci
+          flags: streaming_audio
           env_vars: PYTHON,OS
           fail_ci_if_error: true
