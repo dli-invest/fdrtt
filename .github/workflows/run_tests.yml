@@ -6,6 +6,11 @@ on:
       - 'feature/*'
 env:
   DISCORD_WEBHOOK: " "
+  DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
+  DB_USER: ${{ secrets.PSCALE_DB_USER }}
+  DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
+  DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
+
 # Add cron job to ensure external webpages + apis have no changed
 jobs:
   run_tests:
