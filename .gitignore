@@ -8,3 +8,4 @@ log.txt
 sample.txt
 *.exe
 .env
+.coverage
