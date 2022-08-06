@@ -1,6 +1,6 @@
 # Real time cheap as heck transcription service
 
-[![Transcribe video](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/badge.svg)](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml)
+[![Transcribe video](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/badge.svg)](https://github.com/dli-invest/fdrtt/actions/workflows/transcribe_video.yml) [![codecov](https://codecov.io/gh/dli-invest/fdrtt/branch/main/graph/badge.svg?token=J4EcFvCd8c)](https://codecov.io/gh/dli-invest/fdrtt)
 
 
 ## Components
@@ -41,3 +41,6 @@ wit.ai logic in async run with discord posting and outputting txt file
 grab next element in video.
 
 should be all todo all this in vscodespaces
+
+
+### Test Coverage
