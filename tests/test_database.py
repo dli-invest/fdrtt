@@ -16,7 +16,7 @@ class DB_MANAGER_TESTS(unittest.TestCase):
 
     def test_clear_table(self):
         random_int = random.randint(0, 100000)
-        test_name = "test_clear_table_" + str(random_int)
+        test_name = f"test_clear_table_{random_int}"
         self.db_manager.create_tables(test_name)
         self.db_manager.clear_table(test_name)
         self.assertTrue(True)
