@@ -8,7 +8,7 @@ from processing import get_video_from_start, transcribe_audio, get_video_length
 from utils import ic, send_discord_msg
 from yt_utils import get_video_formats, get_video_link, get_video_metadata, parse_raw_format_str, youtube_livestream_codes, youtube_mp4_codes
 
-MAX_ITERATIONS = 60
+MAX_ITERATIONS = int(os.getenv("MAX_ITERATIONS", 60))
 CHUNK_SIZE = 1900
 VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
