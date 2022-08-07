@@ -22,6 +22,10 @@ env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
   WIT_AI_TOKEN: ${{ secrets.WIT_AI_TOKEN }}
   GH_WORKFLOW_TOKEN: ${{ secrets.GH_WORKFLOW_TOKEN }}
+  DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
+  DB_USER: ${{ secrets.PSCALE_DB_USER }}
+  DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
+  DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
