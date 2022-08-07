@@ -18,6 +18,8 @@ class DB_MANAGER_TESTS(unittest.TestCase):
         rand_num = random()
         test_name = "test_clear_table_" + str(int(rand_num * 10000))
         self.db_manager.create_tables(test_name)
+        # add row to table
+        self.db_manager.insert_into_db(test_name, "test", "test", 0)
         self.db_manager.clear_table(test_name)
         self.assertTrue(True)
 
