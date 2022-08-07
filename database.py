@@ -75,9 +75,23 @@ class DB_MANAGER:
             print("Error inserting into database")
             # single insert, no need to rollbacks
 
+    def get_all_entries(self, video_id: str):
+        try:
+            pool = self.connection_pool
+            db = pool.get_connection()
+            cursor = db.cursor()
+            cursor.execute(f"SELECT * FROM {video_id}")
+            results = cursor.fetchall()
+            db.close()
+            return results
+        except Exception as e:
+            print(e)
+            print("Error getting all entries")
+            return []
+
 
 if __name__ == "__main__":
-    DB_MANAGER.create_tables("sample")
-    DB_MANAGER.clear_table("sample")
+    results = DB_MANAGER().get_all_entries("dp8PhLsUcFE")
+    print(results)
     # clear_table("sample")
     # main()
