@@ -76,6 +76,10 @@ class FD_RTT:
             self.stats["transcriptions"].append(data)
             # send_discord_file(filename=partial_output, file=open(partial_output, "rb"))
             text = data.get("text", "")
+            
+            
+            curr_iteration = self.global_iteration * MAX_ITERATIONS + self.stats["iterations"]
+            self.db_manager.insert_into_db(self.video_id, text, curr_run_time, curr_iteration)
             # make function to convert seconds to human readable time
             data = {}
             # adjust runtime based on iteration if available
