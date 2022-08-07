@@ -31,7 +31,7 @@ def dispatch_github_event(args: argparse.Namespace):
             "iteration": f"{int(args.iteration) + 1}",
         },
     }
-    
+
     r = requests.post(url, headers=headers, json=data)
     print(r.text)
     print(r.status_code)

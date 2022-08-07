@@ -6,7 +6,6 @@ import os
 class DB_MANAGER:
     def __init__(self, pool_size = 5):
         self.connection_pool = DB_MANAGER.create_connection_pool(pool_size)
-        pass
 
     @staticmethod
     def connect_to_db():
@@ -45,7 +44,7 @@ class DB_MANAGER:
         db_user = os.environ.get("DB_USER")
         db_pass = os.environ.get("DB_PASSWORD")
         db_name = os.environ.get("DB_NAME")
-        new_pool = pooling.MySQLConnectionPool(
+        return pooling.MySQLConnectionPool(
             pool_name="transcript_pool",
             pool_size=pool_size,
             pool_reset_session=True,
@@ -54,7 +53,6 @@ class DB_MANAGER:
             host=db_host,
             database=db_name,
         )
-        return new_pool
 
     def get_connection_pool(self):
         return self.connection_pool
