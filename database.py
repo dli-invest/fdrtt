@@ -93,5 +93,7 @@ class DB_MANAGER:
 if __name__ == "__main__":
     results = DB_MANAGER().get_all_entries("dp8PhLsUcFE")
     print(results)
+    for result in results:
+        print(result[0])
     # clear_table("sample")
     # main()

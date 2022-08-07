@@ -4,7 +4,7 @@ from threading import Thread
 import time
 import json
 from processing import get_video_from_start, transcribe_audio
-from utils import ic, send_discord_msg
+from utils import get_video_id_from_ytube_url, ic, send_discord_msg
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 
@@ -27,7 +27,7 @@ class FD_RTT:
         }
 
         try:
-            video_id = url.split("v=")[1].split("&")[0]
+            video_id = get_video_id_from_ytube_url(url)
             self.video_id = video_id
         except Exception as e:
             ic(e)
@@ -79,7 +79,7 @@ class FD_RTT:
             
             
             curr_iteration = self.global_iteration * MAX_ITERATIONS + self.stats["iterations"]
-            self.db_manager.insert_into_db(self.video_id, text, curr_run_time, curr_iteration)
+            self.db_manager.insert_into_db(self.video_id, text, self.video_url, curr_iteration)
             # make function to convert seconds to human readable time
             data = {}
             # adjust runtime based on iteration if available
