@@ -54,3 +54,12 @@ def writeToLogAndPrint(s: str):
         ic()
         ic("Failedto write to log and print")
         print(e)
+
+def get_video_id_from_ytube_url(ytube_url: str):
+    try:
+        video_id = ytube_url.split("v=")[1].split("&")[0]
+        return video_id
+    except Exception as e:
+        ic(e)
+        ic("Error getting video id")
+        return ""
