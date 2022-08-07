@@ -1,12 +1,12 @@
-import subprocess
 import os
 import argparse
 from threading import Thread
 import time
 import json
-from processing import get_video_from_start, transcribe_audio, get_video_length
+from processing import get_video_from_start, transcribe_audio
 from utils import ic, send_discord_msg
-from yt_utils import get_video_formats, get_video_link, get_video_metadata, parse_raw_format_str, youtube_livestream_codes, youtube_mp4_codes
+from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
+from database import DB_MANAGER
 
 MAX_ITERATIONS = int(os.getenv("MAX_ITERATIONS", 60))
 CHUNK_SIZE = 1900
@@ -25,6 +25,24 @@ class FD_RTT:
             "iterations": 0,
             "transcriptions": [],
         }
+
+        try:
+            video_id = url.split("v=")[1].split("&")[0]
+            self.video_id = video_id
+        except Exception as e:
+            ic(e)
+            ic("Error getting video id")
+            self.video_id = ""
+            pass
+        self.db_manager = DB_MANAGER()
+        try:
+            # create table if it doesn't exist
+            self.db_manager.create_tables(self.video_id)
+        except Exception as e:
+            print(e)
+            exit(1)
+
+        self.global_iteration = int(os.getenv("ITERATION", 0))
         # add in video format here
 
     def transcribe(self, data: dict):
