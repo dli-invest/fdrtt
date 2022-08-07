@@ -1,5 +1,5 @@
 # test cases for DB_MANAGER class in database.py using unittest
-from random import random
+from random import random_int
 import unittest
 from database import DB_MANAGER
 
@@ -15,7 +15,7 @@ class DB_MANAGER_TESTS(unittest.TestCase):
         self.assertTrue(True)
 
     def test_clear_table(self):
-        random_int = random.randint(0, 100000)
+        random_int = random_int(0, 100000)
         test_name = "test_clear_table_" + str(random_int)
         self.db_manager.create_tables(test_name)
         self.db_manager.clear_table(test_name)
