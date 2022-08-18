@@ -51,6 +51,8 @@ class FD_RTT:
         except Exception as e:
             print(e)
             global_iteration = 0
+
+        self.global_iteration = global_iteration
         # add in video format here
 
     def transcribe(self, data: dict):
@@ -67,9 +69,8 @@ class FD_RTT:
             partial_output = filename.replace(".mp4", ".json")
             # adjust all run times here based on runtime
             curr_run_time = f"{self.stats['run_time']:.2f}"
-            global_iteration = os.getenv("ITERATION", 0)
-            if int(global_iteration) > 0:
-                curr_total_time = int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
+            if self.global_iteration > 0:
+                curr_total_time = self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
                 curr_run_time = f"{curr_total_time:.2f}"
             else:
                 curr_run_time = f"{self.stats['run_time']:.2f}"
