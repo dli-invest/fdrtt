@@ -10,7 +10,6 @@ from database import DB_MANAGER
 try:
     MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
     MAX_ITERATIONS = int(MAX_ITERATIONS)
-    print(MAX_ITERATIONS)
 except Exception as e:
     print(e)
 CHUNK_SIZE = 1900
@@ -46,7 +45,13 @@ class FD_RTT:
             print(e)
             exit(1)
 
-        self.global_iteration = int(os.getenv("ITERATION", 0))
+        global_iteration = os.getenv("ITERATION", 0)
+        try:
+            print(global_iteration)
+            global_iteration = int(global_iteration)
+        except Exception as e:
+            print(e)
+            global_iteration = 0
         # add in video format here
 
     def transcribe(self, data: dict):
