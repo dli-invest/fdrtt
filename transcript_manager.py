@@ -47,7 +47,6 @@ class FD_RTT:
 
         global_iteration = os.getenv("ITERATION", 0)
         try:
-            print(global_iteration)
             global_iteration = int(global_iteration)
         except Exception as e:
             print(e)
