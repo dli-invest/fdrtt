@@ -7,8 +7,12 @@ from processing import get_video_from_start, transcribe_audio
 from utils import ic, send_discord_msg
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
-
-MAX_ITERATIONS = int(os.getenv("MAX_ITERATIONS", 60))
+try:
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
+    MAX_ITERATIONS = int(MAX_ITERATIONS)
+    print(MAX_ITERATIONS)
+except Exception as e:
+    print(e)
 CHUNK_SIZE = 1900
 VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
@@ -195,6 +199,7 @@ class FD_RTT:
                 # break
 
         global_iteration = os.getenv("ITERATION", 0)
+        print(global_iteration)
         if int(global_iteration) > 0:
             total_data = {
                 "content": f"**Total Run Time**{int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time']}",
