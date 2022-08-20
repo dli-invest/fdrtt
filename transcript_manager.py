@@ -4,7 +4,7 @@ from threading import Thread
 import time
 import json
 from processing import get_video_from_start, transcribe_audio
-from utils import ic, send_discord_msg
+from utils import format_time, ic, send_discord_msg
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 try:
@@ -206,8 +206,9 @@ class FD_RTT:
         global_iteration = os.getenv("ITERATION", 0)
         print(global_iteration)
         if int(global_iteration) > 0:
+            fmtted_run_time = format_time(int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
             total_data = {
-                "content": f"**Total Run Time**{int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time']}",
+                "content": f"**Total Run Time**{fmtted_run_time}",
             }
             send_discord_msg(total_data)
         return mp4_formats
