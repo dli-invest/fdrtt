@@ -2,7 +2,6 @@
 import mysql.connector
 from mysql.connector import pooling, PoolError 
 import os
-import pandas as pd
 
 class DB_MANAGER:
     def __init__(self, pool_size = 5):
@@ -90,6 +89,7 @@ class DB_MANAGER:
 
 
 if __name__ == "__main__":
+    import pandas as pd
     results = DB_MANAGER().get_all_entries("dp8PhLsUcFE")
     # find all results from dp8PhLsUcFE within the last 2 days
     query = "SELECT * FROM dp8PhLsUcFE WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)"
