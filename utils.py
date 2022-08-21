@@ -1,7 +1,6 @@
 import os
 import requests
-import json
-from icecream import ic, colorizedStderrPrint
+from icecream import ic
 
 LOG_FILE = "log.txt"
 def writeToLog(s):
@@ -49,17 +48,31 @@ def send_discord_msg(data):
 def writeToLogAndPrint(s: str):
     try:
         writeToLog(s)
+        # env var to log to console
         print(s)
     except Exception as e:
         ic()
-        ic("Failedto write to log and print")
+        ic("Failed to write to log and print")
         print(e)
 
 
 ## format seconds in days, hours
 def format_time(seconds: int):
-    days = seconds // 86400
-    hours = (seconds % 86400) // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    return f"{days}d {hours}h {minutes}m {seconds}s"
+    try:
+        days = seconds // 86400
+        hours = (seconds % 86400) // 3600
+        minutes = (seconds % 3600) // 60
+        seconds %= 60
+        return f"{days}d {hours}h {minutes}m {seconds}s"
+    except Exception as e:
+        ic(e)
+        ic("Error formatting time")
+        return seconds
+
+def get_video_id_from_ytube_url(ytube_url: str):
+    try:
+        return ytube_url.split("v=")[1].split("&")[0]
+    except Exception as e:
+        ic(e)
+        ic("Error getting video id")
+        return ""

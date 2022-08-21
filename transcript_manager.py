@@ -4,11 +4,11 @@ from threading import Thread
 import time
 import json
 from processing import get_video_from_start, transcribe_audio
-from utils import format_time, ic, send_discord_msg
+from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 1)
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
@@ -20,7 +20,7 @@ VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 class FD_RTT:
     def __init__(self, url, config):
         self._config = config
-        self.url = url
+        self.video_url = url
         # times in seconds, iterations should not be greater than max time
         self.stats = {
             "run_time": 0,
@@ -30,13 +30,12 @@ class FD_RTT:
         }
 
         try:
-            video_id = url.split("v=")[1].split("&")[0]
+            video_id = get_video_id_from_ytube_url(url)
             self.video_id = video_id
         except Exception as e:
             ic(e)
             ic("Error getting video id")
             self.video_id = ""
-            pass
         self.db_manager = DB_MANAGER()
         try:
             # create table if it doesn't exist
@@ -88,7 +87,7 @@ class FD_RTT:
             
             
             curr_iteration = self.global_iteration * MAX_ITERATIONS + self.stats["iterations"]
-            self.db_manager.insert_into_db(self.video_id, text, curr_run_time, curr_iteration)
+            self.db_manager.insert_into_db(self.video_id, text, self.video_url, curr_iteration)
             # make function to convert seconds to human readable time
             data = {}
             # adjust runtime based on iteration if available
@@ -203,12 +202,10 @@ class FD_RTT:
                 ic(self.stats)
                 # break
 
-        global_iteration = os.getenv("ITERATION", 0)
-        print(global_iteration)
-        if int(global_iteration) > 0:
-            fmtted_run_time = format_time(int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
+        if self.global_iteration > 0:
+            fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
             total_data = {
-                "content": f"**Total Run Time**{fmtted_run_time}",
+                "content": f"**Total Run Time** {fmtted_run_time}",
             }
             send_discord_msg(total_data)
         return mp4_formats
@@ -217,12 +214,11 @@ def main(url:str):
     fd_rtt = FD_RTT(url, {})
     data = fd_rtt.process_video(url)
 
-    # print(fd_rtt.stats["transcriptions"])
-
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
-    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
+    # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
+    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     if os.environ.get("WIT_AI_TOKEN") is None:
