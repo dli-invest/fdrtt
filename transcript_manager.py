@@ -203,12 +203,10 @@ class FD_RTT:
                 ic(self.stats)
                 # break
 
-        global_iteration = os.getenv("ITERATION", 0)
-        print(global_iteration)
-        if int(global_iteration) > 0:
-            fmtted_run_time = format_time(int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
+        if self.global_iteration > 0:
+            fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
             total_data = {
-                "content": f"**Total Run Time**{fmtted_run_time}",
+                "content": f"**Total Run Time** {fmtted_run_time}",
             }
             send_discord_msg(total_data)
         return mp4_formats
@@ -216,8 +214,6 @@ class FD_RTT:
 def main(url:str):
     fd_rtt = FD_RTT(url, {})
     data = fd_rtt.process_video(url)
-
-    # print(fd_rtt.stats["transcriptions"])
 
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
