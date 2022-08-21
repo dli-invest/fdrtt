@@ -14,9 +14,9 @@ class DB_LIVESTREAM_SCRAPPER(unittest.TestCase):
        assert response[0].get("status") == "LIVE"
 
     def test_yahoo_finance_tv(self):
-       html = get_html_from_url("https://www.youtube.com/c/YahooFinance")
-       response = get_livestreams_from_html(html)
-       assert response[0].get("status") == "UPCOMING" or response[0].get("status") == "LIVE"
+        html = get_html_from_url("https://www.youtube.com/c/YahooFinance")
+        response = get_livestreams_from_html(html)
+        assert response[0].get("status") in ["UPCOMING", "LIVE"]
 
 if __name__ == '__main__':
     unittest.main()

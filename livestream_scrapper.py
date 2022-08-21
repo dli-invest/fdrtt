@@ -41,7 +41,7 @@ def get_livestreams_from_html(data: str):
         first_section = soup.find("ytd-item-section-renderer")
         # https://www.youtube.com/BloombergTV style-scope ytd-thumbnail-overlay-time-status-renderer
         ytd_thumbnail_overlay_time_status_renderer = first_section.find("ytd-thumbnail-overlay-time-status-renderer")
-        if ytd_thumbnail_overlay_time_status_renderer == None:
+        if ytd_thumbnail_overlay_time_status_renderer is None:
             # try to grab upcoming livestream
             scheduled_text = first_section.find("ytd-video-meta-block")
             run_time = scheduled_text.get_text()
@@ -53,12 +53,11 @@ def get_livestreams_from_html(data: str):
             # channel, date, status /upcoming
             # todo return channel data + status
             livestream_data.append({"date": parsed_date, "status": "UPCOMING"})
-            return livestream_data
         else:
             livestream_label = ytd_thumbnail_overlay_time_status_renderer.get_text()
             if livestream_label is not None:
                 livestream_data.append({"date": None, "status": livestream_label.strip()})
-            return livestream_data
+        return livestream_data
     except Exception as e:
         print(e)
         print("Error getting data from url")
@@ -67,12 +66,11 @@ def get_livestreams_from_html(data: str):
 
 def get_webdriver():
     remote_url = os.environ.get("REMOTE_SELENIUM_URL")
-    if remote_url == None:
+    if remote_url is None:
         raise Exception("Missing REMOTE_SELENIUM_URL in env vars")
-    driver = webdriver.Remote(
+    return webdriver.Remote(
         command_executor=remote_url,
     )
-    return driver
 
 def get_html_from_url(url: str):
     """
