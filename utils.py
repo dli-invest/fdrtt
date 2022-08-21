@@ -48,10 +48,11 @@ def send_discord_msg(data):
 def writeToLogAndPrint(s: str):
     try:
         writeToLog(s)
+        # env var to log to console
         print(s)
     except Exception as e:
         ic()
-        ic("Failedto write to log and print")
+        ic("Failed to write to log and print")
         print(e)
 
 
