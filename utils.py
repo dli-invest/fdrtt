@@ -63,7 +63,7 @@ def format_time(seconds: int):
         hours = (seconds % 86400) // 3600
         minutes = (seconds % 3600) // 60
         seconds %= 60
-        return f"{days}d {hours}h {minutes}m {seconds}s"
+        return f"{int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s"
     except Exception as e:
         ic(e)
         ic("Error formatting time")
