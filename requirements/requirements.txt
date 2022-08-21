@@ -3,3 +3,4 @@ ffmpeg-python
 requests
 icecream
 mysql-connector-python
+beautifulsoup4
