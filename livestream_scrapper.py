@@ -37,6 +37,7 @@ def get_livestreams_from_html(data: str):
         # if featured_content == None:
         #     return None
         # find section-list-renderer
+        livestream_data = []
         first_section = soup.find("ytd-item-section-renderer")
         # https://www.youtube.com/BloombergTV style-scope ytd-thumbnail-overlay-time-status-renderer
         ytd_thumbnail_overlay_time_status_renderer = first_section.find("ytd-thumbnail-overlay-time-status-renderer")
@@ -48,20 +49,20 @@ def get_livestreams_from_html(data: str):
             # remove words like at
             run_str = run_time.replace("Scheduled for", "").strip()
             parsed_date =  dateparser.parse(run_str)
-            print(parsed_date)
             # save to sql table and/or check if date exists
             # channel, date, status /upcoming
             # todo return channel data + status
+            livestream_data.append({"date": parsed_date, "status": "UPCOMING"})
+            return livestream_data
         else:
             livestream_label = ytd_thumbnail_overlay_time_status_renderer.get_text()
             if livestream_label is not None:
-                print(livestream_label.strip())
-                return livestream_label.strip()
+                livestream_data.append({"date": None, "status": livestream_label.strip()})
+            return livestream_data
     except Exception as e:
         print(e)
         print("Error getting data from url")
-        return None
-    # //*[@id="overlays"]/ytd-thumbnail-overlay-time-status-renderer
+        return []
 
 
 def get_webdriver():

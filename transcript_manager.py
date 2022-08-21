@@ -8,7 +8,7 @@ from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 1)
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
@@ -20,7 +20,7 @@ VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 class FD_RTT:
     def __init__(self, url, config):
         self._config = config
-        self.url = url
+        self.video_url = url
         # times in seconds, iterations should not be greater than max time
         self.stats = {
             "run_time": 0,
@@ -218,7 +218,8 @@ def main(url:str):
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
-    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
+    # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
+    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     if os.environ.get("WIT_AI_TOKEN") is None:
