@@ -4,11 +4,14 @@ from threading import Thread
 import time
 import json
 from processing import get_video_from_start, transcribe_audio
-from utils import get_video_id_from_ytube_url, ic, send_discord_msg
+from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
-
-MAX_ITERATIONS = int(os.getenv("MAX_ITERATIONS", 60))
+try:
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
+    MAX_ITERATIONS = int(MAX_ITERATIONS)
+except Exception as e:
+    print(e)
 CHUNK_SIZE = 1900
 VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
@@ -42,7 +45,14 @@ class FD_RTT:
             print(e)
             exit(1)
 
-        self.global_iteration = int(os.getenv("ITERATION", 0))
+        global_iteration = os.getenv("ITERATION", 0)
+        try:
+            global_iteration = int(global_iteration)
+        except Exception as e:
+            print(e)
+            global_iteration = 0
+
+        self.global_iteration = global_iteration
         # add in video format here
 
     def transcribe(self, data: dict):
@@ -59,9 +69,8 @@ class FD_RTT:
             partial_output = filename.replace(".mp4", ".json")
             # adjust all run times here based on runtime
             curr_run_time = f"{self.stats['run_time']:.2f}"
-            global_iteration = os.getenv("ITERATION", 0)
-            if int(global_iteration) > 0:
-                curr_total_time = int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
+            if self.global_iteration > 0:
+                curr_total_time = self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
                 curr_run_time = f"{curr_total_time:.2f}"
             else:
                 curr_run_time = f"{self.stats['run_time']:.2f}"
@@ -195,9 +204,11 @@ class FD_RTT:
                 # break
 
         global_iteration = os.getenv("ITERATION", 0)
+        print(global_iteration)
         if int(global_iteration) > 0:
+            fmtted_run_time = format_time(int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
             total_data = {
-                "content": f"**Total Run Time**{int(global_iteration) * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time']}",
+                "content": f"**Total Run Time**{fmtted_run_time}",
             }
             send_discord_msg(total_data)
         return mp4_formats

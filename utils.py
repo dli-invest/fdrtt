@@ -55,6 +55,14 @@ def writeToLogAndPrint(s: str):
         ic("Failedto write to log and print")
         print(e)
 
+
+## format seconds in days, hours
+def format_time(seconds: int):
+    days = seconds // 86400
+    hours = (seconds % 86400) // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{days}d {hours}h {minutes}m {seconds}s"
 def get_video_id_from_ytube_url(ytube_url: str):
     try:
         video_id = ytube_url.split("v=")[1].split("&")[0]
