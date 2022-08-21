@@ -36,7 +36,6 @@ class FD_RTT:
             ic(e)
             ic("Error getting video id")
             self.video_id = ""
-            pass
         self.db_manager = DB_MANAGER()
         try:
             # create table if it doesn't exist
