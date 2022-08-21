@@ -11,6 +11,7 @@ env:
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
   REMOTE_SELENIUM_URL: ${{ secrets.REMOTE_SELENIUM_URL }}
+  MAX_ITERATIONS: 1
   # DB_NAME: streaming_audio_test
   # DB_USER: gh_actions
   # DB_HOST: 127.0.0.1

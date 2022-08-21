@@ -11,9 +11,9 @@ on:
         description: 'Iteration number'
         required: false
         default: 1
-  push:
-    branches:
-      - 'main'
+  # push:
+  #   branches:
+  #     - 'main'
     paths-ignore:
       - "*.md"
       - "*.txt"
@@ -26,6 +26,7 @@ env:
   DB_USER: ${{ secrets.PSCALE_DB_USER }}
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
+  MAX_ITERATIONS: 60
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
