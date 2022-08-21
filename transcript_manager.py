@@ -8,7 +8,7 @@ from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 1)
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
