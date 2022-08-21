@@ -10,6 +10,7 @@ env:
   DB_USER: ${{ secrets.PSCALE_DB_USER }}
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
+  REMOTE_SELENIUM_URL: ${{ secrets.REMOTE_SELENIUM_URL }}
   # DB_NAME: streaming_audio_test
   # DB_USER: gh_actions
   # DB_HOST: 127.0.0.1
@@ -40,8 +41,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python -m pip install -r requirements.txt
-          python -m pip install -r requirements.dev.txt
+          python -m pip install -r requirements/requirements.txt
+          python -m pip install -r requirements/requirements.dev.txt
+          python -m pip install -r requirements/requirements.livestream.txt
 
       - name: Coverage Report
         run:  |

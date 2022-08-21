@@ -81,9 +81,7 @@ class DB_MANAGER:
             db = pool.get_connection()
             cursor = db.cursor()
             cursor.execute(f"SELECT * FROM {video_id}")
-            results = cursor.fetchall()
-            db.close()
-            return results
+            return cursor
         except Exception as e:
             print(e)
             print("Error getting all entries")
@@ -91,7 +89,13 @@ class DB_MANAGER:
 
 
 if __name__ == "__main__":
+    import pandas as pd
     results = DB_MANAGER().get_all_entries("dp8PhLsUcFE")
-    print(results)
+    # find all results from dp8PhLsUcFE within the last 2 days
+    query = "SELECT * FROM dp8PhLsUcFE WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)"
+    df = pd.read_sql(query, con=DB_MANAGER.connect_to_db())
+    df.to_csv("results.csv", index=False)
+    last_3_rows = "\n".join(df.tail(3)["text"])
+    print(last_3_rows)
     # clear_table("sample")
     # main()
