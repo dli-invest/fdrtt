@@ -10,7 +10,7 @@ from database import DB_MANAGER
 from operator import itemgetter
 
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "60")
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
@@ -85,7 +85,7 @@ class FD_RTT:
                 token["end"] = token["end"] + curr_run_time
 
             with open(partial_output, "w") as f:
-               f.write(json.dumps(data, indent=0))
+                f.write(json.dumps(data, indent=0))
             # append to transcription
             self.stats["transcriptions"].append(data)
             # send_discord_file(filename=partial_output, file=open(partial_output, "rb"))
