@@ -30,7 +30,7 @@ env:
   DB_USER: ${{ secrets.PSCALE_DB_USER }}
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
-  MAX_ITERATIONS: 60
+  MAX_ITERATIONS: 1
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
@@ -93,14 +93,3 @@ jobs:
       - name: Test
         run: echo ${{ env.PUSH_FILES }}
 
-      - name: Push changes
-        if: ${{ env.PUSH_FILES == 'true' }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-
-      - name: rerun workflow
-        if: "${{ github.event.inputs.youtube_url != '' }}"
-        run:
-          python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
