@@ -4,6 +4,10 @@ on:
     branches:
       - 'main'
       - 'feature/*'
+  schedule:
+    # may have to adjust this schedule, but mostly charts to start with
+    - cron: '0 13 * * 5'
+
 env:
   DISCORD_WEBHOOK: " "
   DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
@@ -20,22 +24,17 @@ env:
 # Add cron job to ensure external webpages + apis have no changed
 jobs:
   run_tests:
-    strategy:
-        fail-fast: false
-        matrix:
-          python-version: [3.8, 3.9]
-          os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     name: coverage
     env:
-      PYTHON: ${{ matrix.python-version }}
-      OS: ${{ matrix.os }}
+      PYTHON: 3.10
+      OS: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.10.4
 
       - uses: FedericoCarboni/setup-ffmpeg@v1
         id: setup-ffmpeg

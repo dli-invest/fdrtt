@@ -4,7 +4,7 @@ import requests
 import os 
 import argparse
 
-def dispatch_github_event(args: argparse.Namespace):
+def dispatch_github_event(args: dict):
     """
     convert curl to requests
     curl \
@@ -15,10 +15,10 @@ def dispatch_github_event(args: argparse.Namespace):
     -d '{"ref":"topic-branch","inputs":{"name":"Mona the Octocat","home":"San Francisco, CA"}}'
     """
     token = os.environ.get("GH_WORKFLOW_TOKEN", "")
-    if args.url is None:
+    if args.get("url") is None:
         url = "https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches"
     else:
-        url = args.url
+        url = args.get("url")
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"token {token}",
@@ -27,10 +27,13 @@ def dispatch_github_event(args: argparse.Namespace):
     data = {
         "ref": "main",
         "inputs": {
-            "youtube_url": args.youtube_url,
-            "iteration": f"{int(args.iteration) + 1}",
+            "youtube_url": args.get("youtube_url"),
+            "iteration": f"{int(args.get('iteration', '0')) + 1}",
         },
     }
+
+    if args.get("table_name"):
+        data["inputs"]["table_name"] = args.table_name
 
     r = requests.post(url, headers=headers, json=data)
     print(r.text)
@@ -43,4 +46,4 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--iteration', help='iteration', required=False, default=0)
     parser.add_argument('-u', '--url', help='url', required=False, default="https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches")
     args = parser.parse_args()
-    dispatch_github_event(args)
+    dispatch_github_event(vars(args))
