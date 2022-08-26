@@ -32,6 +32,9 @@ def dispatch_github_event(args: dict):
         },
     }
 
+    if args.get("table_name"):
+        data["inputs"]["table_name"] = args.table_name
+
     r = requests.post(url, headers=headers, json=data)
     print(r.text)
     print(r.status_code)
