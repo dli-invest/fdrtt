@@ -28,7 +28,7 @@ def dispatch_github_event(args: dict):
         "ref": "main",
         "inputs": {
             "youtube_url": args.get("youtube_url"),
-            "iteration": f"{int(args.iteration) + 1}",
+            "iteration": f"{int(args.get('iteration', '0')) + 1}",
         },
     }
 
