@@ -240,7 +240,7 @@ class FD_RTT:
 
 def main(args: dict):
     fd_rtt = FD_RTT(args, {})
-    fd_rtt.process_video(args.url)
+    fd_rtt.process_video(args.get("url"))
 
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
