@@ -44,3 +44,8 @@ should be all todo all this in vscodespaces
 
 
 ### Test Coverage
+
+
+### Other
+
+Yahoo finance livestream starts at 1 pm UTC, monday to friday, maybe skips some holidays.
