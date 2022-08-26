@@ -7,7 +7,9 @@ from unittest import mock
 class TranscriptManager(unittest.TestCase):
 
     def setUp(self):
-        self.fd_rtt = FD_RTT("https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist", {})
+        self.fd_rtt = FD_RTT({
+              "url": "https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist"
+            }, {})
 
     @mock.patch('requests.post', side_effect=mocked_requests_post)
     def test_get_youtube_meta_data(self, mock_send_discord_msg):

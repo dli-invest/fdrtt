@@ -9,6 +9,7 @@ import time
 from selenium import webdriver
 import os
 import dateparser
+from dispatch_another_event import dispatch_github_event
 # requirements.livestream.txt for requirements
 
 
@@ -39,8 +40,20 @@ def get_livestreams_from_html(data: str):
         # find section-list-renderer
         livestream_data = []
         first_section = soup.find("ytd-item-section-renderer")
+
+        title_wrapper = first_section.find("ytd-channel-video-player-renderer")
+        if title_wrapper == None:
+            watch_link = first_section.find("a", {"class": "yt-simple-endpoint style-scope ytd-video-renderer"})
+            watch_url = watch_link.get("href")
+        else:
+            channel_title = title_wrapper.find("yt-formatted-string")
+            watch_link = channel_title.find("a")
+            watch_url = watch_link.get("href")
+        # get video_id <a id="thumbnail" class="yt-simple-endpoint inline-block style-scope ytd-thumbnail" aria-hidden="true" tabindex="-1" rel="null" href="/watch?v=wl1p_H6ckt4">
         # https://www.youtube.com/BloombergTV style-scope ytd-thumbnail-overlay-time-status-renderer
         ytd_thumbnail_overlay_time_status_renderer = first_section.find("ytd-thumbnail-overlay-time-status-renderer")
+        # try to find ytd-video-renderer and get href
+
         if ytd_thumbnail_overlay_time_status_renderer is None:
             # try to grab upcoming livestream
             scheduled_text = first_section.find("ytd-video-meta-block")
@@ -52,11 +65,13 @@ def get_livestreams_from_html(data: str):
             # save to sql table and/or check if date exists
             # channel, date, status /upcoming
             # todo return channel data + status
-            livestream_data.append({"date": parsed_date, "status": "UPCOMING"})
+            # get watch url 
+            # find element
+            livestream_data.append({"date": parsed_date, "status": "UPCOMING", "watch_url": watch_url})
         else:
             livestream_label = ytd_thumbnail_overlay_time_status_renderer.get_text()
             if livestream_label is not None:
-                livestream_data.append({"date": None, "status": livestream_label.strip()})
+                livestream_data.append({"date": None, "status": livestream_label.strip(), "watch_url": watch_url})
         return livestream_data
     except Exception as e:
         print(e)
@@ -84,6 +99,26 @@ def get_html_from_url(url: str):
     return driver.page_source
 
 if __name__ == "__main__":
+    # TODO expand this to get all channels from config file, probably ini file
     # html = get_html_from_url("https://www.youtube.com/c/YahooFinance")
-    html = get_html_from_url("https://www.youtube.com/BloombergTV")
-    get_livestreams_from_html(html)
+    html = get_html_from_url("https://www.youtube.com/c/YahooFinance")
+    # html = get_html_from_url("https://www.youtube.com/BloombergTV")
+    # TODO fix code so it works for upcoming livestreams that arent periodic
+    livestream_data = get_livestreams_from_html(html)
+
+    base_url = "https://www.youtube.com"
+    # check if LIVE or UPCOMING
+    for livestream in livestream_data:
+        if livestream["status"] == "LIVE":
+            print("LIVE")
+            youtube_url = base_url + livestream["watch_url"]
+            data = {"youtube_url": youtube_url, "iteration": -1, "table_name": "YahooFinance"}
+            print(data)
+            dispatch_github_event(data)
+        elif livestream["status"] == "UPCOMING":
+            print("UPCOMING")
+            print("NO UPCOMING STUFF")
+            exit(0)
+        else:
+            print("NONE")
+            exit(1)
