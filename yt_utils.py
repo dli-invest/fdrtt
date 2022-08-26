@@ -1,5 +1,6 @@
 import subprocess
 import re
+import time
 from typing import List
 import youtube_dl
 from utils import ic
@@ -130,5 +131,8 @@ def get_video_metadata(video_url: str = "https://www.youtube.com/watch?v=21X5lGl
     return info_dict
 
 if __name__ == "__main__":
+    start = time.time()
     get_video_metadata()
+    end = time.time()
+    print(end - start)
     # main()

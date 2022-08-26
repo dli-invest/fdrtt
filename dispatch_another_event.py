@@ -4,7 +4,7 @@ import requests
 import os 
 import argparse
 
-def dispatch_github_event(args: argparse.Namespace):
+def dispatch_github_event(args: dict):
     """
     convert curl to requests
     curl \
@@ -43,4 +43,4 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--iteration', help='iteration', required=False, default=0)
     parser.add_argument('-u', '--url', help='url', required=False, default="https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches")
     args = parser.parse_args()
-    dispatch_github_event(args)
+    dispatch_github_event(vars(args))

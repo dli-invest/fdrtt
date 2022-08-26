@@ -7,6 +7,8 @@ from processing import get_video_from_start, transcribe_audio
 from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
+from operator import itemgetter
+
 try:
     MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", 60)
     MAX_ITERATIONS = int(MAX_ITERATIONS)
@@ -18,9 +20,9 @@ VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 
 
 class FD_RTT:
-    def __init__(self, url, config):
+    def __init__(self, args, config):
         self._config = config
-        self.video_url = url
+        self.video_url = args.url
         # times in seconds, iterations should not be greater than max time
         self.stats = {
             "run_time": 0,
@@ -28,14 +30,19 @@ class FD_RTT:
             "iterations": 0,
             "transcriptions": [],
         }
+        self.exit_on_video = args.exit_on_video
+        table_name = os.getenv("TABLE_NAME")
+        if table_name is None:
+            try:
+                video_id = get_video_id_from_ytube_url(args.url)
+                self.video_id = video_id
+            except Exception as e:
+                ic(e)
+                ic("Error getting video id")
+                self.video_id = ""
+        else:
+            self.video_id = table_name
 
-        try:
-            video_id = get_video_id_from_ytube_url(url)
-            self.video_id = video_id
-        except Exception as e:
-            ic(e)
-            ic("Error getting video id")
-            self.video_id = ""
         self.db_manager = DB_MANAGER()
         try:
             # create table if it doesn't exist
@@ -67,25 +74,22 @@ class FD_RTT:
             # save to json file, replace .mp3 with .json
             partial_output = filename.replace(".mp4", ".json")
             # adjust all run times here based on runtime
-            curr_run_time = f"{self.stats['run_time']:.2f}"
+            curr_run_time = format_time(self.stats['run_time'])
             if self.global_iteration > 0:
                 curr_total_time = self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats["run_time"]
-                curr_run_time = f"{curr_total_time:.2f}"
-            else:
-                curr_run_time = f"{self.stats['run_time']:.2f}"
+                curr_run_time = format_time(curr_total_time)
             # adjust times in tokens under data
             # TODO fix this for the speech section
             for token in data.get("tokens", []):
                 token["start"] = token["start"] + curr_run_time
                 token["end"] = token["end"] + curr_run_time
+
             with open(partial_output, "w") as f:
                f.write(json.dumps(data, indent=0))
             # append to transcription
             self.stats["transcriptions"].append(data)
             # send_discord_file(filename=partial_output, file=open(partial_output, "rb"))
             text = data.get("text", "")
-            
-            
             curr_iteration = self.global_iteration * MAX_ITERATIONS + self.stats["iterations"]
             self.db_manager.insert_into_db(self.video_id, text, self.video_url, curr_iteration)
             # make function to convert seconds to human readable time
@@ -130,15 +134,12 @@ class FD_RTT:
         ic("Sending metadata embed")
         send_discord_msg(data)
 
-    def process_video(self, ytube_url: str = "https://www.youtube.com/watch?v=86YLFOog4GM&ab_channel=SpaceVideos"):
+    def parse_metadata(self, metadata: dict)-> dict:
         """
-        Main function.
+        Parse metadata and send to discord
         """
-
-        # grab raw data from url with mp3 versions
-        metadata = get_video_metadata(ytube_url)
+        # send metadata to discord
         formats = metadata.get("formats", [])
-
         # filter for ext = mp4
         mp4_formats = [f for f in formats if f.get("ext", "") == "mp4"]
         format_ids = [int(f.get("format_id", 0)) for f in mp4_formats]
@@ -156,6 +157,28 @@ class FD_RTT:
             video_entries = sorted(set(format_ids).intersection(youtube_mp4_codes))
             selected_id = video_entries[0]
             is_livestream = False
+
+        return {
+            "selected_id": selected_id,
+            "is_livestream": is_livestream,
+        }
+
+    def process_video(self, ytube_url: str = "https://www.youtube.com/watch?v=86YLFOog4GM&ab_channel=SpaceVideos"):
+        """
+        Main function.
+        """
+
+        # grab raw data from url with mp3 versions
+        metadata = get_video_metadata(ytube_url)
+        formats = metadata.get("formats", [])
+        selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+
+        if self.exit_on_video is True:
+            if is_livestream is False:
+                ic("Exiting on video")
+                exit(0)
+
+        # TODO fix this code so that it can handle non livestreams
 
         self.send_metadata_embed(metadata, {"format_id": selected_id, "url": ytube_url, "is_livestream": is_livestream})
         # to prevent link for expiring regrab when possible
@@ -200,7 +223,12 @@ class FD_RTT:
                 start_time = self.stats["start_time"]
                 self.stats["run_time"] = (time.time() - start_time)
                 ic(self.stats)
-                # break
+                if is_livestream:
+                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+                    if still_is_livestream is False:
+                        ic("Exiting since livestream is finished")
+                        print("LIVESTREAM IS FINISHED")
+                        break
 
         if self.global_iteration > 0:
             fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
@@ -208,20 +236,21 @@ class FD_RTT:
                 "content": f"**Total Run Time** {fmtted_run_time}",
             }
             send_discord_msg(total_data)
-        return mp4_formats
+        return None
 
-def main(url:str):
-    fd_rtt = FD_RTT(url, {})
-    data = fd_rtt.process_video(url)
+def main(args: dict):
+    fd_rtt = FD_RTT(args, {})
+    fd_rtt.process_video(args.url)
 
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
     # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
     parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
+    parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=True)
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     if os.environ.get("WIT_AI_TOKEN") is None:
         print("WIT_AI_TOKEN is not set")
         exit(1)
-    main(args.url)
+    main(vars(args))
