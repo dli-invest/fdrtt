@@ -46,4 +46,9 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--iteration', help='iteration', required=False, default=0)
     parser.add_argument('-u', '--url', help='url', required=False, default="https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches")
     args = parser.parse_args()
-    dispatch_github_event(vars(args))
+    dict_args = {
+        "youtube_url": args.youtube_url,
+        "iteration": args.iteration,
+        "url": args.url,
+    }
+    dispatch_github_event(dict_args)
