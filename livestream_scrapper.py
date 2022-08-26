@@ -117,7 +117,7 @@ if __name__ == "__main__":
             dispatch_github_event(data)
         elif livestream["status"] == "UPCOMING":
             print("UPCOMING")
-            print("NO UPCOMING LIVESTREAMS")
+            print("NO UPCOMING STUFF")
             exit(0)
         else:
             print("NONE")
