@@ -1,5 +1,5 @@
 # produce yaml file cron job
-name: Transcribe
+name: Test Transcribe
 on:
   workflow_dispatch:
     inputs:
