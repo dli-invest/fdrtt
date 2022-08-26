@@ -173,10 +173,9 @@ class FD_RTT:
         formats = metadata.get("formats", [])
         selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
 
-        if self.exit_on_video is True:
-            if is_livestream is False:
-                ic("Exiting on video")
-                exit(0)
+        if self.exit_on_video is True and is_livestream is False:
+            ic("Exiting on video")
+            exit(0)
 
         # TODO fix this code so that it can handle non livestreams
 

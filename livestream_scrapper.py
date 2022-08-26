@@ -42,13 +42,12 @@ def get_livestreams_from_html(data: str):
         first_section = soup.find("ytd-item-section-renderer")
 
         title_wrapper = first_section.find("ytd-channel-video-player-renderer")
-        if title_wrapper == None:
+        if title_wrapper is None:
             watch_link = first_section.find("a", {"class": "yt-simple-endpoint style-scope ytd-video-renderer"})
-            watch_url = watch_link.get("href")
         else:
             channel_title = title_wrapper.find("yt-formatted-string")
             watch_link = channel_title.find("a")
-            watch_url = watch_link.get("href")
+        watch_url = watch_link.get("href")
         # get video_id <a id="thumbnail" class="yt-simple-endpoint inline-block style-scope ytd-thumbnail" aria-hidden="true" tabindex="-1" rel="null" href="/watch?v=wl1p_H6ckt4">
         # https://www.youtube.com/BloombergTV style-scope ytd-thumbnail-overlay-time-status-renderer
         ytd_thumbnail_overlay_time_status_renderer = first_section.find("ytd-thumbnail-overlay-time-status-renderer")
