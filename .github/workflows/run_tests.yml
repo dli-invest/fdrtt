@@ -27,14 +27,14 @@ jobs:
     runs-on: ubuntu-latest
     name: coverage
     env:
-      PYTHON: 3.10
+      PYTHON: 3.8
       OS: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.10.4
+          python-version: 3.8.1
 
       - uses: FedericoCarboni/setup-ffmpeg@v1
         id: setup-ffmpeg
