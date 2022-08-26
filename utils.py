@@ -1,6 +1,6 @@
 import os
 import requests
-from icecream import ic
+from icecream import ic, colorizedStderrPrint
 
 LOG_FILE = "log.txt"
 def writeToLog(s):
