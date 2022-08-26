@@ -20,9 +20,9 @@ VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 
 
 class FD_RTT:
-    def __init__(self, args, config):
+    def __init__(self, input_args, config):
         self._config = config
-        self.video_url = args.get("url")
+        self.video_url = input_args.get("url")
         # times in seconds, iterations should not be greater than max time
         self.stats = {
             "run_time": 0,
@@ -30,7 +30,7 @@ class FD_RTT:
             "iterations": 0,
             "transcriptions": [],
         }
-        self.exit_on_video = args.get("exit_on_video", False)
+        self.exit_on_video = input_args.get("exit_on_video", False)
         table_name = os.getenv("TABLE_NAME")
         if table_name is None:
             try:
