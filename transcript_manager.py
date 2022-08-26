@@ -32,8 +32,9 @@ class FD_RTT:
         }
         self.exit_on_video = input_args.get("exit_on_video", False)
         table_name = os.getenv("TABLE_NAME")
-        if table_name is None:
+        if table_name == "" or table_name is None:
             try:
+                ic("Grabbing table name from video_id")
                 video_id = get_video_id_from_ytube_url(self.video_url)
                 self.video_id = video_id
             except Exception as e:
@@ -41,6 +42,7 @@ class FD_RTT:
                 ic("Error getting video id")
                 self.video_id = ""
         else:
+            ic("setting table_name from TABLE_NAME env var: " + table_name)
             self.video_id = table_name
 
         self.db_manager = DB_MANAGER()
