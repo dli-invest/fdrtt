@@ -239,6 +239,7 @@ class FD_RTT:
         return None
 
 def main(args: dict):
+    ic("Trying to initialize")
     fd_rtt = FD_RTT(args, {})
     ic("Attempting to run video")
     fd_rtt.process_video(args.get("url"))
