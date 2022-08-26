@@ -8,7 +8,7 @@ on:
   schedule:
     # may have to adjust this schedule, but mostly charts to 
     # start with for the yahoo finance page
-    - cron: '0 13 * * 5'
+    - cron: '0 13 * * 1-5'
 env:
   DISCORD_WEBHOOK: " "
   REMOTE_SELENIUM_URL: ${{ secrets.REMOTE_SELENIUM_URL }}
