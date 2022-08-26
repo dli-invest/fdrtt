@@ -40,9 +40,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.7.9' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: '3.8.6' # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64'
       - name: Install Dependencies
         run: |
