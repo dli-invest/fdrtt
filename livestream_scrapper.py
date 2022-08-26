@@ -112,7 +112,7 @@ if __name__ == "__main__":
         if livestream["status"] == "LIVE":
             print("LIVE")
             youtube_url = base_url + livestream["watch_url"]
-            data = {"youtube_url": youtube_url, "iteration": -1}
+            data = {"youtube_url": youtube_url, "iteration": -1, "table_name": "YahooFinance"}
             print(data)
             dispatch_github_event(data)
         elif livestream["status"] == "UPCOMING":
