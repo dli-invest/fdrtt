@@ -240,6 +240,7 @@ class FD_RTT:
 
 def main(args: dict):
     fd_rtt = FD_RTT(args, {})
+    ic("Attempting to run video")
     fd_rtt.process_video(args.get("url"))
 
 if __name__ == "__main__":
@@ -250,6 +251,7 @@ if __name__ == "__main__":
     parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=True)
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
+    ic("Running main")
     if os.environ.get("WIT_AI_TOKEN") is None:
         print("WIT_AI_TOKEN is not set")
         exit(1)
