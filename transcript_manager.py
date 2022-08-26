@@ -115,7 +115,7 @@ class FD_RTT:
         # format_id = other_data.get("format_id", "")
         # get youtube video from link
         url = other_data.get("url", "")
-        iteration = os.getenv("ITERATION", 0)
+        iteration = os.getenv("ITERATION", "0")
         embed = {
             "title": f"{metadata.get('title', '')} - {iteration}",
             "description": metadata.get("description", "")[:500],

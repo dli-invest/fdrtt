@@ -4,6 +4,10 @@ on:
     branches:
       - 'main'
       - 'feature/*'
+  schedule:
+    # may have to adjust this schedule, but mostly charts to start with
+    - cron: '0 13 * * 5'
+
 env:
   DISCORD_WEBHOOK: " "
   DB_NAME: ${{ secrets.PSCALE_DB_NAME }}

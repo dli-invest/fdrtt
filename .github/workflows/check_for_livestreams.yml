@@ -1,0 +1,48 @@
+# checks for upcoming periodic livestreams like for yahoo finance
+name: Run Tests
+on:
+  push:
+    branches:
+      - 'main'
+      - 'feature/*'
+
+  schedule:
+    # may have to adjust this schedule, but mostly charts to 
+    # start with for the yahoo finance page
+    - cron: '0 13 * * 5'
+env:
+  DISCORD_WEBHOOK: " "
+  REMOTE_SELENIUM_URL: ${{ secrets.REMOTE_SELENIUM_URL }}
+  GH_WORKFLOW_TOKEN: ${{ secrets.GH_WORKFLOW_TOKEN }}
+  # DB_NAME: streaming_audio_test
+  # DB_USER: gh_actions
+  # DB_HOST: 127.0.0.1
+  # DB_PASSWORD: password
+
+# Add cron job to ensure external webpages + apis have no changed
+jobs:
+  run_tests:
+    strategy:
+        fail-fast: false
+        matrix:
+          python-version: [3.10]
+          os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    name: coverage
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      OS: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -r requirements/requirements.livestream.txt
+
+      - name: Check livestream scrapper
+        run: |
+          python livestream_scrapper.py
