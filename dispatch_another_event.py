@@ -15,10 +15,10 @@ def dispatch_github_event(args: dict):
     -d '{"ref":"topic-branch","inputs":{"name":"Mona the Octocat","home":"San Francisco, CA"}}'
     """
     token = os.environ.get("GH_WORKFLOW_TOKEN", "")
-    if args.url is None:
+    if args.get("url") is None:
         url = "https://api.github.com/repos/dli-invest/fdrtt/actions/workflows/transcribe_video.yml/dispatches"
     else:
-        url = args.url
+        url = args.get("url")
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"token {token}",
@@ -27,7 +27,7 @@ def dispatch_github_event(args: dict):
     data = {
         "ref": "main",
         "inputs": {
-            "youtube_url": args.youtube_url,
+            "youtube_url": args.get("youtube_url"),
             "iteration": f"{int(args.iteration) + 1}",
         },
     }
