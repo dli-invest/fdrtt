@@ -22,22 +22,17 @@ env:
 # Add cron job to ensure external webpages + apis have no changed
 jobs:
   run_tests:
-    strategy:
-        fail-fast: false
-        matrix:
-          python-version: [3.10]
-          os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     name: coverage
     env:
-      PYTHON: ${{ matrix.python-version }}
-      OS: ${{ matrix.os }}
+      PYTHON: 3.10
+      OS: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.10
 
       - name: Install Dependencies
         run: |
