@@ -67,11 +67,13 @@ jobs:
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
+        timeout-minutes: 310
 
       # for master/main only use
       - name: Transcribe without url
         if: "${{ github.event.inputs.youtube_url == '' }}"
         run: python transcript_manager.py
+        timeout-minutes: 310
         
       - name: Commit files
         run: |
