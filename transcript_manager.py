@@ -10,7 +10,7 @@ from database import DB_MANAGER
 from operator import itemgetter
 
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "60")
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "50")
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
