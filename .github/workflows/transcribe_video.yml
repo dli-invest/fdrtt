@@ -95,7 +95,7 @@ jobs:
       - name: Test
         run: echo ${{ env.PUSH_FILES }}
 
-       - name: Step To run on failure
+      - name: Step To run on failure
         if: ${{ failure() }}
         run: |
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
