@@ -1,11 +1,32 @@
 import os
 import requests
-from icecream import ic, colorizedStderrPrint
+import logging 
+from icecream import ic
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+sentry_logging = LoggingIntegration(
+    level=logging.INFO,        # Capture info and above as breadcrumbs
+    event_level=logging.ERROR  # Send errors as events
+)
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    traces_sample_rate=1.0,
+    environment="production",
+     integrations=[
+        sentry_logging,
+    ],
+)
+
+
 
 LOG_FILE = "log.txt"
 def writeToLog(s):
+    # write to sentry   
     # write to log file
-    colorizedStderrPrint(s)
+    logging.warning(s)
+    # colorizedStderrPrint(s)
     with open(LOG_FILE, "a") as f:
         f.write(s)
         f.write("\n")
