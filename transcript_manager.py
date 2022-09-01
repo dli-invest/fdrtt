@@ -5,7 +5,7 @@ import time
 import json
 from operator import itemgetter
 from processing import get_video_from_start, transcribe_audio
-from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
+from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time, append_to_github_actions
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
 
@@ -30,7 +30,7 @@ class FD_RTT:
             "iterations": 0,
             "transcriptions": [],
         }
-        self.exit_on_video = input_args.get("exit_on_video", False)
+        self.exit_on_video = input_args.get("exit_on_video", True)
         table_name = os.getenv("TABLE_NAME")
         if table_name == "" or table_name is None:
             try:
@@ -87,7 +87,7 @@ class FD_RTT:
                 token["start"] = token["start"] + curr_run_time
                 token["end"] = token["end"] + curr_run_time
 
-            with open(partial_output, "w") as f:
+            with open(partial_output, "w", encoding="utf-8", errors="ignore") as f:
                 f.write(json.dumps(data, indent=0))
             # append to transcription
             self.stats["transcriptions"].append(data)
@@ -132,7 +132,10 @@ class FD_RTT:
 
     def parse_metadata(self, metadata: dict)-> dict:
         """
-        Parse metadata and send to discord
+        Parse metadata and send to discord.
+
+        After a video is done recording, 
+        it will have both the livestream format and the mp4 format.
         """
         # send metadata to discord
         formats = metadata.get("formats", [])
@@ -140,19 +143,23 @@ class FD_RTT:
         mp4_formats = [f for f in formats if f.get("ext", "") == "mp4"]
         format_ids = [int(f.get("format_id", 0)) for f in mp4_formats]
         # sort format ids highest to lowest
-        # data = parse_raw_format_str(formats.stdout.decode("utf-8"))
-        # check if data has items in mp4 list
-        # youtube id from metadata and extension and number
+
         livestream_entries = list(set(format_ids).intersection(youtube_livestream_codes))
         is_livestream = True
         if livestream_entries:
             # get the first one
             livestream_entries.sort()
             selected_id = livestream_entries[0]
-        else:
-            video_entries = sorted(set(format_ids).intersection(youtube_mp4_codes))
+        
+        video_entries = sorted(set(format_ids).intersection(youtube_mp4_codes))
+
+        if len(video_entries) > 0:
+            # use video format id over livestream id if available
             selected_id = video_entries[0]
             is_livestream = False
+
+        # TODO use video format if available
+
 
         return {
             "selected_id": selected_id,
@@ -171,7 +178,9 @@ class FD_RTT:
         if self.exit_on_video is True:
             if is_livestream is False:
                 ic("Exiting on video as it is not a livestream")
+                append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
                 exit(0)
+            # send metadata to discord
 
         # TODO fix this code so that it can handle non livestreams
 
@@ -202,16 +211,13 @@ class FD_RTT:
                 iterations = self.stats.get("iterations", 0)
                 filename = f"{metadata.get('id', '')}_{iterations}.mp4"
                 filename = filename.replace("-", "")
-                # format_seconds(4*60+30)
+
                 get_video_from_start(format_url, {
                     "end": "0:04:30",
                     "filename": filename,
                 })
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
                 background_thread.start()
-                        # background_thread.join()
-                        # process video here
-                        # update iteration in stats
             except Exception as ex:
                 ic(ex)
             finally:
@@ -219,18 +225,23 @@ class FD_RTT:
                 start_time = self.stats["start_time"]
                 self.stats["run_time"] = (time.time() - start_time)
                 ic(self.stats)
-                if is_livestream:
-                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
-                    if still_is_livestream is False:
-                        ic("Exiting since livestream is finished")
-                        print("LIVESTREAM IS FINISHED")
-                        # send message to discord
-                        fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
-                        data = {
-                            "content": "LIVESTREAM IS FINISHED \n Run time: {}".format(fmtted_run_time)
-                        }
-                        send_discord_msg(data)
-                        exit(0)
+                # every 5 iterations check if we should close
+                if self.stats.get("iterations", 0) % 5 == 0:
+                    if is_livestream:
+                        _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+                        if still_is_livestream is False:
+                            ic("Exiting since livestream is finished")
+                            print("LIVESTREAM IS FINISHED")
+                            # send message to discord
+                            fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
+                            data = {
+                                "content": "LIVESTREAM IS FINISHED \n Run time: {}".format(fmtted_run_time)
+                            }
+                            send_discord_msg(data)
+                            append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
+                            exit(0)
+                        else:
+                            ic("Livestream is still running")
 
         if self.global_iteration > 0:
             fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
