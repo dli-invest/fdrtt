@@ -84,7 +84,7 @@ def format_time(seconds: int):
         hours = (seconds % 86400) // 3600
         minutes = (seconds % 3600) // 60
         seconds %= 60
-        return f"{int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s"
+        return f"{int(days)}d {int(hours)}h {int(minutes)}m {seconds}s"
     except Exception as e:
         ic(e)
         ic("Error formatting time")
@@ -108,4 +108,3 @@ def append_to_github_actions(s: str):
     except Exception as e:
         ic(e)
         ic("Error appending to github actions")
-        pass
