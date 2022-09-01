@@ -4,3 +4,4 @@ requests
 icecream
 mysql-connector-python
 beautifulsoup4
+sentry_sdk
