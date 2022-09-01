@@ -1,10 +1,10 @@
 # checks for upcoming periodic livestreams like for yahoo finance
 name: Check Livestreams
 on:
-  push:
-    branches:
-      - 'main'
-      - 'feature/*'
+  # push:
+  #   branches:
+  #     - 'main'
+  #     - 'feature/*'
   schedule:
     # may have to adjust this schedule, but mostly charts to 
     # start with for the yahoo finance page
@@ -37,6 +37,9 @@ jobs:
         run: |
           python -m pip install -r requirements/requirements.livestream.txt
 
+      # only on main possibly
       - name: Check livestream scrapper
+        # main branch git
+        # if: github.ref == 'refs/heads/main'
         run: |
           python livestream_scrapper.py

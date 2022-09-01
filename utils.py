@@ -1,11 +1,32 @@
 import os
 import requests
-from icecream import ic, colorizedStderrPrint
+import logging 
+from icecream import ic
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+sentry_logging = LoggingIntegration(
+    level=logging.INFO,        # Capture info and above as breadcrumbs
+    event_level=logging.ERROR  # Send errors as events
+)
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    traces_sample_rate=1.0,
+    environment="production",
+     integrations=[
+        sentry_logging,
+    ],
+)
+
+
 
 LOG_FILE = "log.txt"
 def writeToLog(s):
+    # write to sentry   
     # write to log file
-    colorizedStderrPrint(s)
+    logging.warning(s)
+    # colorizedStderrPrint(s)
     with open(LOG_FILE, "a") as f:
         f.write(s)
         f.write("\n")
@@ -63,7 +84,7 @@ def format_time(seconds: int):
         hours = (seconds % 86400) // 3600
         minutes = (seconds % 3600) // 60
         seconds %= 60
-        return f"{int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s"
+        return f"{int(days)}d {int(hours)}h {int(minutes)}m {seconds}s"
     except Exception as e:
         ic(e)
         ic("Error formatting time")
@@ -76,3 +97,14 @@ def get_video_id_from_ytube_url(ytube_url: str):
         ic(e)
         ic("Error getting video id")
         return ""
+
+
+def append_to_github_actions(s: str):
+    try:
+        with open(os.getenv("GITHUB_ENV"), "a") as f:
+            f.write(s)
+            f.write("\n")
+            f.close()
+    except Exception as e:
+        ic(e)
+        ic("Error appending to github actions")

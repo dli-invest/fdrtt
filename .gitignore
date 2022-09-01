@@ -4,7 +4,6 @@ venv
 *.json
 __pycache__
 ref
-log.txt
 sample.txt
 *.exe
 .env

@@ -2,3 +2,4 @@ beautifulsoup4
 selenium
 dateparser
 requests
+sentry_sdk

@@ -1,14 +1,14 @@
 """
     Video processing and text extraction
 """
-import subprocess
-import os
-import requests
 import time
 import json
-import ffmpeg
+import subprocess
+import os
 import math
 import glob
+import requests
+import ffmpeg
 from utils import ic, writeToLogAndPrint
 
 def get_video_length(video_path: str):
@@ -36,7 +36,7 @@ def get_video_from_start(url: str, config: dict):
     end = config.get("end", "00:00:10")
     filename = config.get("filename", "livestream01.mp4")
     # remove all dashes from filename
-    ic("Getting video")
+    ic("[get_video_from_start] Getting video")
     # delete filename if it exists
     if os.path.exists(filename):
         os.remove(filename)
@@ -56,7 +56,7 @@ def convert_mp4_to_mp3(filename: str):
     Convert mp4 to mp3 using ffmpeg
     """
     ic("Converting mp4 to mp3")
-    mp4_filename = filename.replace(".mp4", f".mp3")
+    mp4_filename = filename.replace(".mp4", ".mp3")
     result = subprocess.run(
         f"ffmpeg -i {filename} -vn {mp4_filename}",
         shell=True,
@@ -77,26 +77,24 @@ def parse_witai_response(data: str):
     type_end_line = None
     matches = []
     lines = data.split("\n")
-    for i in range(len(lines)):
+    for i, value in enumerate(lines):
         line = lines[i]
         # make sure this isnt a comment 
         # match { at start of line
         if line.startswith("{") and type_start_line is None:
             type_start_line = i
 
-        if type_start_line is not None:
-            if line.startswith("}"):
-                type_end_line = i
-                # append entry to matches
-                # get all rows from type_start_line to type_end_line
-                matches.append({
-                    "type_start": type_start_line,
-                    "type_end": type_end_line,
-                    "data": lines[type_start_line:type_end_line+1]
-                })
-                type_start_line = None
-                type_end_line = None
-                continue
+        if type_start_line is not None and line.startswith("}"):
+            type_end_line = i
+            # append entry to matches
+            # get all rows from type_start_line to type_end_line
+            matches.append({
+                "type_start": type_start_line,
+                "type_end": type_end_line,
+                "data": lines[type_start_line:type_end_line+1]
+            })
+            type_start_line = None
+            type_end_line = None
     # combine all data results and remove duplicates and merge text
     final_object = {
         "speech": {
@@ -107,7 +105,6 @@ def parse_witai_response(data: str):
     for match in matches:
         matchstr = "".join(match.get("data"))
         transcript_data = json.loads(matchstr)
-        ic(transcript_data)
         # only append entries that has is final
         if transcript_data.get("is_final"):
             # final_object["speech"]["tokens"].append(data)
@@ -124,15 +121,23 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
     """
     WIT_AT_ENDPOINT = 'https://api.wit.ai/dictation?v=20220622'
     WIT_AT_TOKEN = os.environ.get("WIT_AI_TOKEN")
-    WIT_AT_HEADERS = {'Authorization': 'Bearer ' + WIT_AT_TOKEN, 'Content-Type': mime_type, "Accept": "application/json"}
+    WIT_AT_HEADERS = {
+        'Authorization': f'Bearer {WIT_AT_TOKEN}',
+        'Content-Type': mime_type,
+        "Accept": "application/json",
+    }
+
     with open(file_path, 'rb') as f:
         WIT_AT_DATA = f.read()
     r = requests.post(WIT_AT_ENDPOINT, headers=WIT_AT_HEADERS, data=WIT_AT_DATA)
     try:
-        writeToLogAndPrint(r.text)
+        # writeToLogAndPrint(r.text)
+        # print(r.text)
+        writeToLogAndPrint("Attempt to parse wit.ai response as json")
         data = r.json()
         return data
-    except Exception as e:
+    except Exception as _ex:
+        ic("Failed to parse wit.ai response")
         return parse_witai_response(r.text)
 
 def format_seconds(seconds: int):
@@ -141,7 +146,7 @@ def format_seconds(seconds: int):
     """
     hours = math.floor(seconds / 3600)
     minutes = math.floor((seconds % 3600) / 60)
-    seconds = seconds % 60
+    seconds %= 60
     return f"{hours}:{minutes}:{seconds}"
 
 def transcribe_audio(filename: str, is_livestream: bool = False):
@@ -151,7 +156,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
     mp3_file = filename.replace(".mp4", ".mp3")
     try:
         t1_start = time.perf_counter()
-        if is_livestream is False:
+        if not is_livestream:
             # split mp4 into smaller mp3 files
             length_in_secs = get_video_length(filename)
             # round to nearest second 
@@ -162,7 +167,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
             chunk_length = 4 * 60 + 30
             # iterate through chunks
             ic()
-            for i in range(0, math.ceil(length_in_secs /chunk_length)):
+            for i in range(math.ceil(length_in_secs /chunk_length)):
                 ic()
                 # get start and end time
                 start = i * chunk_length
@@ -171,9 +176,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 # -vn", filename.replace(".mp4", ".mp3")
                 # todo integrate directly using ffmpeg python binders
                 os.system(f"ffmpeg -y -i {filename} -ss {format_seconds(start)} -t {format_seconds(end)} -vn {chunk_filename}")
-            else:
-                ic("No chunks to process for video")
-            # convert_mp4_to_mp3(filename)
+            ic("No chunks to process for video")
+                    # convert_mp4_to_mp3(filename)
         else:
             convert_mp4_to_mp3(filename)
         t2_start = time.perf_counter()
@@ -185,7 +189,7 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
 
     # TODO refactor this logic tommorow to be a specific function
     try:
-        if is_livestream == False:
+        if not is_livestream:
             # iterate through files with _{d} format
             final_object = {
                 "speech": {
@@ -198,7 +202,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 # get text from mp3
                 partial_object = get_text_from_mp3(file)
                 # append to final object
-                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + partial_object["speech"]["tokens"]
+                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + \
+                     partial_object["speech"]["tokens"]
                 final_object["text"] += partial_object["text"]
             return final_object
         else:

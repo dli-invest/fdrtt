@@ -1,6 +1,9 @@
 # produce yaml file cron job
 name: Transcribe
 on:
+  push:
+    branches:
+      - 'master'
   workflow_dispatch:
     inputs:
       youtube_url:
@@ -15,9 +18,6 @@ on:
         description: 'Table name for planetscale'
         required: false
         # default: 'YahooFinance'
-  # push:
-  #   branches:
-  #     - 'main'
     paths-ignore:
       - "*.md"
       - "*.txt"
@@ -31,13 +31,13 @@ env:
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
   MAX_ITERATIONS: 60
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
   scrap_data:
     runs-on: ubuntu-latest
     name: transcribe video
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -107,6 +107,7 @@ jobs:
           branch: ${{ github.ref }}
 
       - name: rerun workflow
-        if: "${{ github.event.inputs.youtube_url != '' }}"
+        # youtube url and TERMINATE_LIVESTREAM is not set
+        if: "${{ github.event.inputs.youtube_url != '' }} && ${{ env.TERMINATE_LIVESTREAM != 'TRUE' }}"
         run:
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
