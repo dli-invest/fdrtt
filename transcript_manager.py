@@ -3,11 +3,11 @@ import argparse
 from threading import Thread
 import time
 import json
+from operator import itemgetter
 from processing import get_video_from_start, transcribe_audio
 from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
-from operator import itemgetter
 
 try:
     MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "50")
@@ -55,7 +55,7 @@ class FD_RTT:
             ic("Failed to make table")
             exit(1)
 
-        global_iteration = os.getenv("ITERATION", 0)
+        global_iteration = os.getenv("ITERATION", "0")
         try:
             global_iteration = int(global_iteration)
         except Exception as e:
@@ -73,7 +73,6 @@ class FD_RTT:
         is_livestream = data.get("is_livestream", False)
         ic(f"Transcribing... {filename}")
         data = transcribe_audio(filename, is_livestream)
-        ic(data)
         if data is not None:
             # save to json file, replace .mp3 with .json
             partial_output = filename.replace(".mp4", ".json")
@@ -111,13 +110,6 @@ class FD_RTT:
         """
         Send metadata embed to discord
         """
-        # data = {
-        #     "embeds": [{
-        #          "title": "test",
-        # }]
-        # }
-        # format_id = other_data.get("format_id", "")
-        # get youtube video from link
         url = other_data.get("url", "")
         iteration = os.getenv("ITERATION", "0")
         embed = {
@@ -176,10 +168,9 @@ class FD_RTT:
         metadata = get_video_metadata(ytube_url)
         formats = metadata.get("formats", [])
         selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
-
         if self.exit_on_video is True:
             if is_livestream is False:
-                ic("Exiting on video")
+                ic("Exiting on video as it is not a livestream")
                 exit(0)
 
         # TODO fix this code so that it can handle non livestreams
@@ -187,6 +178,7 @@ class FD_RTT:
         self.send_metadata_embed(metadata, {"format_id": selected_id, "url": ytube_url, "is_livestream": is_livestream})
         # to prevent link for expiring regrab when possible
         # loop through data and get first number
+        
         while self.stats.get("iterations", 0) < MAX_ITERATIONS:
             try:
                 # grab format from formats using format_id
@@ -220,8 +212,8 @@ class FD_RTT:
                         # background_thread.join()
                         # process video here
                         # update iteration in stats
-            except Exception as e:
-                ic(e)
+            except Exception as ex:
+                ic(ex)
             finally:
                 self.stats["iterations"] += 1
                 start_time = self.stats["start_time"]
@@ -232,7 +224,13 @@ class FD_RTT:
                     if still_is_livestream is False:
                         ic("Exiting since livestream is finished")
                         print("LIVESTREAM IS FINISHED")
-                        break
+                        # send message to discord
+                        fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
+                        data = {
+                            "content": "LIVESTREAM IS FINISHED \n Run time: {}".format(fmtted_run_time)
+                        }
+                        send_discord_msg(data)
+                        exit(0)
 
         if self.global_iteration > 0:
             fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
@@ -242,11 +240,11 @@ class FD_RTT:
             send_discord_msg(total_data)
         return None
 
-def main(args: dict):
+def main(params: dict):
     ic("Trying to initialize")
-    fd_rtt = FD_RTT(args, {})
+    fd_rtt = FD_RTT(params, {})
     ic("Attempting to run video")
-    fd_rtt.process_video(args.get("url"))
+    fd_rtt.process_video(params.get("url"))
 
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos

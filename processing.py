@@ -1,14 +1,14 @@
 """
     Video processing and text extraction
 """
-import subprocess
-import os
-import requests
 import time
 import json
-import ffmpeg
+import subprocess
+import os
 import math
 import glob
+import requests
+import ffmpeg
 from utils import ic, writeToLogAndPrint
 
 def get_video_length(video_path: str):
@@ -36,7 +36,7 @@ def get_video_from_start(url: str, config: dict):
     end = config.get("end", "00:00:10")
     filename = config.get("filename", "livestream01.mp4")
     # remove all dashes from filename
-    ic("Getting video")
+    ic("[get_video_from_start] Getting video")
     # delete filename if it exists
     if os.path.exists(filename):
         os.remove(filename)
@@ -56,7 +56,7 @@ def convert_mp4_to_mp3(filename: str):
     Convert mp4 to mp3 using ffmpeg
     """
     ic("Converting mp4 to mp3")
-    mp4_filename = filename.replace(".mp4", f".mp3")
+    mp4_filename = filename.replace(".mp4", ".mp3")
     result = subprocess.run(
         f"ffmpeg -i {filename} -vn {mp4_filename}",
         shell=True,
@@ -77,7 +77,7 @@ def parse_witai_response(data: str):
     type_end_line = None
     matches = []
     lines = data.split("\n")
-    for i in range(len(lines)):
+    for i, value in enumerate(lines):
         line = lines[i]
         # make sure this isnt a comment 
         # match { at start of line
@@ -107,7 +107,6 @@ def parse_witai_response(data: str):
     for match in matches:
         matchstr = "".join(match.get("data"))
         transcript_data = json.loads(matchstr)
-        ic(transcript_data)
         # only append entries that has is final
         if transcript_data.get("is_final"):
             # final_object["speech"]["tokens"].append(data)
@@ -129,10 +128,13 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
         WIT_AT_DATA = f.read()
     r = requests.post(WIT_AT_ENDPOINT, headers=WIT_AT_HEADERS, data=WIT_AT_DATA)
     try:
-        writeToLogAndPrint(r.text)
+        # writeToLogAndPrint(r.text)
+        # print(r.text)
+        writeToLogAndPrint("Attempt to parse wit.ai response as json")
         data = r.json()
         return data
-    except Exception as e:
+    except Exception as _ex:
+        ic("Failed to parse wit.ai response")
         return parse_witai_response(r.text)
 
 def format_seconds(seconds: int):
@@ -198,7 +200,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 # get text from mp3
                 partial_object = get_text_from_mp3(file)
                 # append to final object
-                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + partial_object["speech"]["tokens"]
+                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + \
+                     partial_object["speech"]["tokens"]
                 final_object["text"] += partial_object["text"]
             return final_object
         else:

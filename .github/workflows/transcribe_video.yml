@@ -31,6 +31,7 @@ env:
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
   MAX_ITERATIONS: 60
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 # Add cron job to ensure external webpages + apis have no changed
 
 jobs:
