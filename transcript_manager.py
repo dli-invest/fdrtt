@@ -42,7 +42,7 @@ class FD_RTT:
                 ic("Error getting video id")
                 self.video_id = ""
         else:
-            ic("setting table_name from TABLE_NAME env var: " + table_name)
+            ic(f"setting table_name from TABLE_NAME env var: {table_name}")
             self.video_id = table_name
 
         self.db_manager = DB_MANAGER()
@@ -130,7 +130,7 @@ class FD_RTT:
         ic("Sending metadata embed")
         send_discord_msg(data)
 
-    def parse_metadata(self, metadata: dict)-> dict:
+    def parse_metadata(self, metadata: dict) -> dict:
         """
         Parse metadata and send to discord.
 
@@ -142,17 +142,16 @@ class FD_RTT:
         # filter for ext = mp4
         mp4_formats = [f for f in formats if f.get("ext", "") == "mp4"]
         format_ids = [int(f.get("format_id", 0)) for f in mp4_formats]
-        # sort format ids highest to lowest
-
-        livestream_entries = list(set(format_ids).intersection(youtube_livestream_codes))
-        is_livestream = True
-        if livestream_entries:
+        if livestream_entries := list(
+            set(format_ids).intersection(youtube_livestream_codes)
+        ):
             # get the first one
             livestream_entries.sort()
             selected_id = livestream_entries[0]
-        
+
         video_entries = sorted(set(format_ids).intersection(youtube_mp4_codes))
 
+        is_livestream = True
         if len(video_entries) > 0:
             # use video format id over livestream id if available
             selected_id = video_entries[0]
@@ -175,19 +174,16 @@ class FD_RTT:
         metadata = get_video_metadata(ytube_url)
         formats = metadata.get("formats", [])
         selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
-        if self.exit_on_video is True:
-            if is_livestream is False:
-                ic("Exiting on video as it is not a livestream")
-                append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
-                exit(0)
-            # send metadata to discord
-
+        if self.exit_on_video is True and is_livestream is False:
+            ic("Exiting on video as it is not a livestream")
+            append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
+            exit(0)
         # TODO fix this code so that it can handle non livestreams
 
         self.send_metadata_embed(metadata, {"format_id": selected_id, "url": ytube_url, "is_livestream": is_livestream})
         # to prevent link for expiring regrab when possible
         # loop through data and get first number
-        
+
         while self.stats.get("iterations", 0) < MAX_ITERATIONS:
             try:
                 # grab format from formats using format_id
@@ -226,22 +222,19 @@ class FD_RTT:
                 self.stats["run_time"] = (time.time() - start_time)
                 ic(self.stats)
                 # every 5 iterations check if we should close
-                if self.stats.get("iterations", 0) % 5 == 0:
-                    if is_livestream:
-                        _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
-                        if still_is_livestream is False:
-                            ic("Exiting since livestream is finished")
-                            print("LIVESTREAM IS FINISHED")
-                            # send message to discord
-                            fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
-                            data = {
-                                "content": "LIVESTREAM IS FINISHED \n Run time: {}".format(fmtted_run_time)
-                            }
-                            send_discord_msg(data)
-                            append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
-                            exit(0)
-                        else:
-                            ic("Livestream is still running")
+                if self.stats.get("iterations", 0) % 5 == 0 and is_livestream:
+                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+                    if still_is_livestream is False:
+                        ic("Exiting since livestream is finished")
+                        print("LIVESTREAM IS FINISHED")
+                        # send message to discord
+                        fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
+                        data = {"content": f"LIVESTREAM IS FINISHED \n Run time: {fmtted_run_time}"}
+                        send_discord_msg(data)
+                        append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
+                        exit(0)
+                    else:
+                        ic("Livestream is still running")
 
         if self.global_iteration > 0:
             fmtted_run_time = format_time(self.global_iteration * MAX_ITERATIONS * VIDEO_CHUNK_LENGTH_IN_SECS + self.stats['run_time'])
