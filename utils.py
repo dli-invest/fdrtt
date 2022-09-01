@@ -97,3 +97,15 @@ def get_video_id_from_ytube_url(ytube_url: str):
         ic(e)
         ic("Error getting video id")
         return ""
+
+
+def append_to_github_actions(s: str):
+    try:
+        with open(os.getenv("GITHUB_ENV"), "a") as f:
+            f.write(s)
+            f.write("\n")
+            f.close()
+    except Exception as e:
+        ic(e)
+        ic("Error appending to github actions")
+        pass
