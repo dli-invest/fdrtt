@@ -8,7 +8,8 @@ class TranscriptManager(unittest.TestCase):
 
     def setUp(self):
         self.fd_rtt = FD_RTT({
-              "url": "https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist"
+              "url": "https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist",
+              "exit_on_video": False,
             }, {})
 
     @mock.patch('requests.post', side_effect=mocked_requests_post)
