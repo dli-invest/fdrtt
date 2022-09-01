@@ -1,6 +1,9 @@
 # produce yaml file cron job
 name: TranscribeVideo
 on:
+  push:
+    branches:
+      - 'master'
   workflow_dispatch:
     inputs:
       youtube_url:
@@ -15,9 +18,6 @@ on:
         description: 'Table name for planetscale'
         required: false
         # default: 'YahooFinance'
-  # push:
-  #   branches:
-  #     - 'main'
     paths-ignore:
       - "*.md"
       - "*.txt"
