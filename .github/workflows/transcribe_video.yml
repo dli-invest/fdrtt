@@ -1,5 +1,5 @@
 # produce yaml file cron job
-name: TranscribeVideo
+name: Transcribe
 on:
   push:
     branches:
@@ -38,7 +38,6 @@ jobs:
   scrap_data:
     runs-on: ubuntu-latest
     name: transcribe video
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
