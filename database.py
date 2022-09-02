@@ -22,9 +22,11 @@ class DB_MANAGER:
     def create_tables(video_id: str):
         db = DB_MANAGER.connect_to_db()
         # create table with | id | text | video_url | iteration | created_at
+        # replace TL-PSukZktA with underline
+        fixed_id = video_id.replace("-", "_")
         cursor = db.cursor()
         cursor.execute(
-            f"CREATE TABLE IF NOT EXISTS {video_id} (id INT AUTO_INCREMENT PRIMARY KEY, text TEXT, video_url VARCHAR(255), iteration INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+            f"CREATE TABLE IF NOT EXISTS {fixed_id} (id INT AUTO_INCREMENT PRIMARY KEY, text TEXT, video_url VARCHAR(255), iteration INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
         )
         db.commit()
         db.close()
