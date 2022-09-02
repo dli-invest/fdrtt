@@ -110,4 +110,5 @@ jobs:
         # youtube url and TERMINATE_LIVESTREAM is not set
         if: "${{ github.event.inputs.youtube_url != '' }} && ${{ env.TERMINATE_LIVESTREAM != 'TRUE' }}"
         run:
+          echo ${{ env.TERMINATE_LIVESTREAM }}
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
