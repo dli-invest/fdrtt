@@ -137,7 +137,7 @@ def get_text_from_mp3(file_path: str, mime_type = "audio/mpeg3"):
         data = r.json()
         return data
     except Exception as _ex:
-        ic("Failed to parse wit.ai response")
+        ic("Using text logic now")
         return parse_witai_response(r.text)
 
 def format_seconds(seconds: int):

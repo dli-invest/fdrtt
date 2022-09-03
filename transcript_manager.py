@@ -10,7 +10,7 @@ from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_c
 from database import DB_MANAGER
 
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "0")
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "50")
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
