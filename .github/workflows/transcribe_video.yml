@@ -86,11 +86,6 @@ jobs:
             git config --local user.name "GitHub Action"
             echo "tree is dirty, please commit changes before running this"
             echo "PUSH_FILES=true" >> $GITHUB_ENV
-            git config pull.rebase false || true
-            git commit -m "Add changes" -a
-            git merge -Xours main || true
-            git pull origin main --strategy=ours || true
-            git pull origin main || true
           fi
       - name: Test
         run: echo ${{ env.PUSH_FILES }}
@@ -99,12 +94,13 @@ jobs:
         if: ${{ failure() }}
         run: |
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
-      - name: Push changes
-        if: ${{ env.PUSH_FILES == 'true' }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+
+      # - name: Push changes
+      #   if: ${{ env.PUSH_FILES == 'true' }}
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ github.ref }}
 
       - name: rerun workflow
         # youtube url and TERMINATE_LIVESTREAM is not set
