@@ -119,9 +119,12 @@ jobs:
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
       #     branch: ${{ github.ref }}
 
+      - name: check env var
+        run:
+          echo ${{ env.TERMINATE_LIVESTREAM }}
       - name: rerun workflow
         # youtube url and TERMINATE_LIVESTREAM is not set
         if: "${{ github.event.inputs.youtube_url != '' }} && ${{ env.TERMINATE_LIVESTREAM != 'TRUE' }}"
-        run:
-          echo ${{ env.TERMINATE_LIVESTREAM }}
+        run: |
+          echo "rerun workflow"
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
