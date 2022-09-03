@@ -30,7 +30,7 @@ env:
   DB_USER: ${{ secrets.PSCALE_DB_USER }}
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
-  MAX_ITERATIONS: 50
+  MAX_ITERATIONS: 10
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 # Add cron job to ensure external webpages + apis have no changed
 
@@ -77,13 +77,13 @@ jobs:
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
-        timeout-minutes: 320
+        # timeout-minutes: 320
 
       # for master/main only use
       - name: Transcribe without url
         if: "${{ github.event.inputs.youtube_url == '' }}"
         run: python transcript_manager.py
-        timeout-minutes: 320
+        # timeout-minutes: 320
         
       - name: Commit files
         run: |
@@ -103,6 +103,7 @@ jobs:
       - name: Step To run on failure
         if: ${{ failure() }}
         run: |
+          echo "Attempt to dispatch another event"
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
 
       # upload log.txt

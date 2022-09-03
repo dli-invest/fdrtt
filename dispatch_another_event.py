@@ -4,6 +4,7 @@ import requests
 import os 
 import argparse
 
+# TODO if this keeps failing just dispatch the event from a server
 def dispatch_github_event(args: dict):
     """
     convert curl to requests
@@ -47,6 +48,7 @@ def dispatch_github_event(args: dict):
 
 if __name__ == "__main__":
     # parse arguments
+    print("STARTING TO PARSE ARGUMENTS")
     parser = argparse.ArgumentParser(description='Dispatch a workflow event')
     parser.add_argument('-url', '--youtube_url', help='youtube_url', required=True)
     parser.add_argument('-i', '--iteration', help='iteration', required=False, default=0)
@@ -58,3 +60,4 @@ if __name__ == "__main__":
         "url": args.url,
     }
     dispatch_github_event(dict_args)
+    print("SUCCESFULLY DISPATCHED GITHUB EVENT")
