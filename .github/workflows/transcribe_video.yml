@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - 'master'
+    paths-ignore:
+      - "*.md"
+      - "*.txt"
   workflow_dispatch:
     inputs:
       youtube_url:
@@ -13,14 +16,12 @@ on:
       iteration:
         description: 'Iteration number'
         required: false
-        default: 1
+        default: "1"
       table_name:
         description: 'Table name for planetscale'
         required: false
         # default: 'YahooFinance'
-    paths-ignore:
-      - "*.md"
-      - "*.txt"
+      
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
@@ -30,7 +31,7 @@ env:
   DB_USER: ${{ secrets.PSCALE_DB_USER }}
   DB_HOST: ${{ secrets.PSCALE_DB_HOST }}
   DB_PASSWORD: ${{ secrets.PSCALE_DB_PASSWORD }}
-  MAX_ITERATIONS: 10
+  MAX_ITERATIONS: 60
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 # Add cron job to ensure external webpages + apis have no changed
 
