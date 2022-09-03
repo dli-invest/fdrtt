@@ -35,9 +35,15 @@ def dispatch_github_event(args: dict):
     if args.get("table_name"):
         data["inputs"]["table_name"] = args.get("table_name")
 
-    r = requests.post(url, headers=headers, json=data)
-    print(r.text)
-    print(r.status_code)
+    print("ATTEMPTING TO DISPATCH GITHUB EVENT")
+    try: 
+        response = requests.post(url, headers=headers, json=data)
+        print(response)
+        print(response.text)
+    except Exception as e:
+        print(e)
+        print("ERROR DISPATCHING GITHUB EVENT")
+        
 
 if __name__ == "__main__":
     # parse arguments

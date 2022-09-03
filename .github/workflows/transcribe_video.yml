@@ -39,6 +39,16 @@ jobs:
     runs-on: ubuntu-latest
     name: transcribe video
     steps:
+
+      # run on latest tag when more stable
+      # # Get new tags from remote
+      # git fetch --tags
+
+      # Get latest tag name
+      # latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+      # Checkout latest tag
+      # git checkout $latestTag
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
         with:
@@ -95,6 +105,13 @@ jobs:
         run: |
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
 
+      # upload log.txt
+      - name: Upload log.txt
+        if: ${{ env.PUSH_FILES == 'true' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: log.txt
+          path: log.txt
       # - name: Push changes
       #   if: ${{ env.PUSH_FILES == 'true' }}
       #   uses: ad-m/github-push-action@master
