@@ -20,8 +20,6 @@ on:
       table_name:
         description: 'Table name for planetscale'
         required: false
-        # default: 'YahooFinance'
-      
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_LIVESTREAM_WEBHOOK }}
@@ -74,11 +72,14 @@ jobs:
         run: |
           if [ -z "${{ github.event.inputs.table_name }}" ]; then
             echo "TABLE_NAME=${{ github.event.inputs.table_name }}" >> $GITHUB_ENV
+            echo ${{ github.event.inputs.table_name }}
+            export TABLE_NAME=${{ github.event.inputs.table_name }}
           fi
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
-        run: python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
-        # timeout-minutes: 320
+        run: |
+          echo $TABLE_NAME
+          python transcript_manager.py --url "${{ github.event.inputs.youtube_url }}"
 
       # for master/main only use
       - name: Transcribe without url

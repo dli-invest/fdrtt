@@ -18,7 +18,6 @@ CHUNK_SIZE = 1900
 VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
 
-
 class FD_RTT:
     def __init__(self, input_args, config):
         self._config = config
@@ -32,6 +31,8 @@ class FD_RTT:
         }
         self.exit_on_video = input_args.get("exit_on_video", True)
         table_name = os.getenv("TABLE_NAME")
+        if table_name is None:
+            table_name = input_args.get("table_name")
         if table_name == "" or table_name is None:
             try:
                 ic("Grabbing table name from video_id")
@@ -256,6 +257,8 @@ if __name__ == "__main__":
     # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
     parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
     parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=True)
+    # table name
+    parser.add_argument('--table_name', '-tn', help='table name')
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     ic("Running main")
@@ -266,4 +269,6 @@ if __name__ == "__main__":
         "url": args.url,
         "exit_on_video": args.exit_for_videos,
     }
+    if args.table_name.strip() != "":
+        dict_args["table_name"] = args.table_name
     main(dict_args)

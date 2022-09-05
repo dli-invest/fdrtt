@@ -39,6 +39,8 @@ class DB_MANAGER:
         db.commit()
         db.close()
 
+
+
     @staticmethod
     def create_connection_pool(pool_size: int  = 5):
         # read database credentials from environment variables
@@ -77,6 +79,31 @@ class DB_MANAGER:
             print("Error inserting into database")
             # single insert, no need to rollbacks
 
+    def merge_tables(self, table_names: [str])->None:
+        """
+            INSERT INTO Amide_actives_decoys(Structure, Name, Active)
+            SELECT * FROM Amide_decoys 
+            UNION ALL
+            SELECT * FROM Amide_actives; 
+
+            https://stackoverflow.com/questions/26750410/merge-2-tables-in-sql-and-save-into-1-new-table
+        """
+        try:
+            pool = self.connection_pool
+            db = pool.get_connection()
+            cursor = db.cursor()
+            # merge tables 21X5lGlDOfg ACRlRB9k0Bs KWMqeJiIiMo TL_PSukZktA Tiumqeeg92w tde_pFZUoPk tmhI10y8XmI wl1p_H6ckt4
+            # I know SQL injection bad but this is only used by me and not for work purposes
+            # please do not judge me please and thank you
+            add_union_join = lambda x: x != len(table_names) - 1 and "UNION ALL" or ""
+            rest_of_query = [f"SELECT text, video_url, iteration, created_at FROM {table} {add_union_join(count)}".strip() for count, table in enumerate(table_names)]
+            raw_query = " ".join(rest_of_query)
+            cursor.execute(f"INSERT INTO YahooFinance(text, video_url, iteration, created_at) {raw_query}")
+        except Exception as e:
+            print(e)
+            print("Error merging tables")
+            return None
+        
     def get_all_entries(self, video_id: str):
         try:
             pool = self.connection_pool
@@ -91,13 +118,15 @@ class DB_MANAGER:
 
 
 if __name__ == "__main__":
-    import pandas as pd
-    results = DB_MANAGER().get_all_entries("dp8PhLsUcFE")
-    # find all results from dp8PhLsUcFE within the last 2 days
-    query = "SELECT * FROM dp8PhLsUcFE WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)"
-    df = pd.read_sql(query, con=DB_MANAGER.connect_to_db())
-    df.to_csv("results.csv", index=False)
-    last_3_rows = "\n".join(df.tail(3)["text"])
-    print(last_3_rows)
+    pass 
+    # db.merge_tables(table_names=["21X5lGlDOfg", "ACRlRB9k0Bs", "KWMqeJiIiMo", "TL_PSukZktA", "Tiumqeeg92w", "tde_pFZUoPk", "tmhI10y8XmI", "wl1p_H6ckt4"])
+    # import pandas as pd
+    # results = DB_MANAGER().get_all_entries("YahooFinance")
+    # # find all results from dp8PhLsUcFE within the last 2 days
+    # query = "SELECT * FROM dp8PhLsUcFE WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 5 DAY)"
+    # df = pd.read_sql(query, con=DB_MANAGER.connect_to_db())
+    # df.to_csv("results.csv", index=False)
+    # last_3_rows = "\n".join(df.tail(3)["text"])
+    # print(last_3_rows)
     # clear_table("sample")
     # main()
