@@ -69,12 +69,11 @@ jobs:
           echo "YOUTUBE_URL=${{ github.event.inputs.youtube_url}}" >> $GITHUB_ENV
       
       - name: set table name if available
+        if: "${{ github.event.inputs.table_name != '' }}"
         run: |
-          if [ -z "${{ github.event.inputs.table_name }}" ]; then
             echo "TABLE_NAME=${{ github.event.inputs.table_name }}" >> $GITHUB_ENV
             echo ${{ github.event.inputs.table_name }}
             export TABLE_NAME=${{ github.event.inputs.table_name }}
-          fi
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: |
