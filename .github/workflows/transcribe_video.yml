@@ -74,6 +74,7 @@ jobs:
             echo "TABLE_NAME=${{ github.event.inputs.table_name }}" >> $GITHUB_ENV
             echo ${{ github.event.inputs.table_name }}
             export TABLE_NAME=${{ github.event.inputs.table_name }}
+
       - name: Transcribe with url
         if: "${{ github.event.inputs.youtube_url != '' }}"
         run: |

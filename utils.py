@@ -19,8 +19,6 @@ sentry_sdk.init(
     ],
 )
 
-
-
 LOG_FILE = "log.txt"
 def writeToLog(s):
     # write to sentry   
@@ -57,14 +55,6 @@ def send_discord_msg(data):
             url, json=data
         )
     data = r.text
-    # except Exception as e:
-    #     ic("FAILED TO SEND MESSAGE")
-    #     print("FAILED TO SEND REQUEST")
-    #     print(e)
-    #     pass
-
-    # exit(1)
-
 
 def writeToLogAndPrint(s: str):
     try:
@@ -84,7 +74,7 @@ def format_time(seconds: int):
         hours = (seconds % 86400) // 3600
         minutes = (seconds % 3600) // 60
         seconds %= 60
-        return f"{int(days)}d {int(hours)}h {int(minutes)}m {seconds}s"
+        return f"{int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s"
     except Exception as e:
         ic(e)
         ic("Error formatting time")
