@@ -256,7 +256,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
     # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
     parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
-    parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=True)
+    parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=False)
     # table name
     parser.add_argument('--table_name', '-tn', help='table name')
     args = parser.parse_args()

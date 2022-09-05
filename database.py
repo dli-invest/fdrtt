@@ -118,15 +118,15 @@ class DB_MANAGER:
 
 
 if __name__ == "__main__":
-    pass 
+    # pass 
     # db.merge_tables(table_names=["21X5lGlDOfg", "ACRlRB9k0Bs", "KWMqeJiIiMo", "TL_PSukZktA", "Tiumqeeg92w", "tde_pFZUoPk", "tmhI10y8XmI", "wl1p_H6ckt4"])
-    # import pandas as pd
+    import pandas as pd
     # results = DB_MANAGER().get_all_entries("YahooFinance")
     # # find all results from dp8PhLsUcFE within the last 2 days
-    # query = "SELECT * FROM dp8PhLsUcFE WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 5 DAY)"
-    # df = pd.read_sql(query, con=DB_MANAGER.connect_to_db())
-    # df.to_csv("results.csv", index=False)
-    # last_3_rows = "\n".join(df.tail(3)["text"])
-    # print(last_3_rows)
+    query = "SELECT * FROM YahooFinance WHERE created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 5 DAY)"
+    df = pd.read_sql(query, con=DB_MANAGER.connect_to_db())
+    df.to_csv("results.csv", index=False)
+    last_3_rows = "\n".join(df.tail(3)["text"])
+    print(last_3_rows)
     # clear_table("sample")
     # main()

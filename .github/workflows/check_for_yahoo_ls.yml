@@ -1,5 +1,5 @@
 # checks for upcoming periodic livestreams like for yahoo finance
-name: Check Livestreams
+name: Check Livestreams For Yahoo Finance
 on:
   # push:
   #   branches:
