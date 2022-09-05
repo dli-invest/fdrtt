@@ -258,7 +258,6 @@ if __name__ == "__main__":
     parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
     parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=False)
     # table name
-    parser.add_argument('--table_name', '-tn', help='table name')
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     ic("Running main")
@@ -269,6 +268,4 @@ if __name__ == "__main__":
         "url": args.url,
         "exit_on_video": args.exit_for_videos,
     }
-    if args.table_name.strip() != "":
-        dict_args["table_name"] = args.table_name
     main(dict_args)
