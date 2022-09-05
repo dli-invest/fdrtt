@@ -48,7 +48,7 @@ class FD_RTT:
 
         self.db_manager = DB_MANAGER()
         try:
-            print(self.video_id)
+            print("Creating table for named: ", self.video_id)
             # create table if it doesn't exist
             self.db_manager.create_tables(self.video_id)
         except Exception as e:
