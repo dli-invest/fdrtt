@@ -17,14 +17,16 @@ class TranscriptManager(unittest.TestCase):
         self.fd_rtt.send_metadata_embed({"id": "KWMqeJiIiMo"}, {"format_id": "mp4", "url": "https://www.youtube.com/watch?v=KWMqeJiIiMo&ab_channel=EpicEconomist", "is_livestream": False})
         mock_send_discord_msg.assert_called_once()
 
-    @mock.patch('requests.post', side_effect=mocked_requests_post)
-    def test_process_video(self, mock_request):
-        self.fd_rtt.process_video("https://www.youtube.com/watch?v=u88EmaRrIlU&ab_channel=BNNBloomberg")
-        self.assertTrue(True)
+    # process video can be done with test transcribe
+    # @mock.patch('requests.post', side_effect=mocked_requests_post)
+    # def test_process_video(self, mock_request):
+    #     self.fd_rtt.process_video("https://www.youtube.com/watch?v=u88EmaRrIlU&ab_channel=BNNBloomberg")
+    #     self.assertTrue(True)
 
+    @mock.patch('requests.post', side_effect=mocked_requests_post)
     def test_get_channel(self, mock_request):
         channelName = self.fd_rtt.get_channel_from_name()
-        self.assertEqual(channelName, "EpicEconomist")
+        self.assertEqual(channelName, "Epic Economist")
 
 if __name__ == '__main__':
     unittest.main()

@@ -237,7 +237,7 @@ class FD_RTT:
                 ic(self.stats)
                 # every 5 iterations check if we should close
                 if self.stats.get("iterations", 0) % 5 == 0 and is_livestream:
-                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata())
                     if still_is_livestream is False:
                         ic("Exiting since livestream is finished")
                         print("LIVESTREAM IS FINISHED")
