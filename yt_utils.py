@@ -45,11 +45,8 @@ def find_first_number_in_str(line: str):
     """
     Finds the first number in a string and returns it.
     """
-    num = re.findall(r'\d+', line) 
-    if len(num) == 0:
-        return None
-    else:
-        return num[0]
+    num = re.findall(r'\d+', line)
+    return None if len(num) == 0 else num[0]
 
 def parse_raw_format_str(raw_format_str: str):
     """
@@ -117,10 +114,9 @@ def main(url: str = "https://www.youtube.com/watch?v=enGbgVLMuw4&ab_channel=Yaho
     # ic(result)
     return
 
-def get_youtube_meta_data(video_url: str)-> List[dict]:
-     with youtube_dl.YoutubeDL({'outtmpl': '%(id)s.%(ext)s'}) as ydl:
-        info_dict = ydl.extract_info(video_url, download=False)
-        return info_dict
+def get_youtube_meta_data(video_url: str) -> List[dict]:
+    with youtube_dl.YoutubeDL({'outtmpl': '%(id)s.%(ext)s'}) as ydl:
+        return ydl.extract_info(video_url, download=False)
 
 def get_video_metadata(video_url: str = "https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA")-> dict:
     with youtube_dl.YoutubeDL({'outtmpl': '%(id)s.%(ext)s'}) as ydl:
