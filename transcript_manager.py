@@ -35,7 +35,7 @@ class FD_RTT:
         if table_name is None:
             table_name = input_args.get("table_name")
         if table_name is None:
-            table_name = self.get_channel_from_name()
+            table_name = self.get_channel_from_name().replace(" ", "_")
         # fallback to video_id
         if table_name == "" or table_name is None:
             try:
