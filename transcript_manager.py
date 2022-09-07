@@ -30,9 +30,13 @@ class FD_RTT:
             "transcriptions": [],
         }
         self.exit_on_video = input_args.get("exit_on_video", True)
+        self.metadata = get_video_metadata(self.video_url)
         table_name = os.getenv("TABLE_NAME")
         if table_name is None:
             table_name = input_args.get("table_name")
+        if table_name is None:
+            table_name = self.get_channel_from_name().replace(" ", "_")
+        # fallback to video_id
         if table_name == "" or table_name is None:
             try:
                 ic("Grabbing table name from video_id")
@@ -43,7 +47,7 @@ class FD_RTT:
                 ic("Error getting video id")
                 self.video_id = ""
         else:
-            ic(f"setting table_name from TABLE_NAME env var: {table_name}")
+            ic(f"setting table_name from TABLE_NAME as: {table_name}")
             self.video_id = table_name
 
         self.db_manager = DB_MANAGER()
@@ -65,6 +69,16 @@ class FD_RTT:
 
         self.global_iteration = global_iteration
         # add in video format here
+    def get_channel_from_name(self):
+        metadata = self.metadata
+        channel = metadata.get("channel", "")
+        uploader_id = metadata.get("uploader_id", "")
+        uploader = metadata.get("uploader", "")
+        if uploader == "Yahoo Finance":
+            return "YahooFinance"
+        if uploader_id == "Bloomberg":
+            return "Bloomberg"
+        return channel
 
     def transcribe(self, data: dict):
         """
@@ -131,7 +145,7 @@ class FD_RTT:
         ic("Sending metadata embed")
         send_discord_msg(data)
 
-    def parse_metadata(self, metadata: dict) -> dict:
+    def parse_metadata(self) -> dict:
         """
         Parse metadata and send to discord.
 
@@ -139,7 +153,7 @@ class FD_RTT:
         it will have both the livestream format and the mp4 format.
         """
         # send metadata to discord
-        formats = metadata.get("formats", [])
+        formats = self.metadata.get("formats", [])
         # filter for ext = mp4
         mp4_formats = [f for f in formats if f.get("ext", "") == "mp4"]
         format_ids = [int(f.get("format_id", 0)) for f in mp4_formats]
@@ -170,11 +184,10 @@ class FD_RTT:
         """
         Main function.
         """
-
+        metadata = self.metadata
         # grab raw data from url with mp3 versions
-        metadata = get_video_metadata(ytube_url)
         formats = metadata.get("formats", [])
-        selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+        selected_id, is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata())
         if self.exit_on_video is True and is_livestream is False:
             ic("Exiting on video as it is not a livestream")
             append_to_github_actions("TERMINATE_LIVESTREAM=TRUE")
@@ -224,7 +237,7 @@ class FD_RTT:
                 ic(self.stats)
                 # every 5 iterations check if we should close
                 if self.stats.get("iterations", 0) % 5 == 0 and is_livestream:
-                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata(metadata))
+                    _, still_is_livestream = itemgetter('selected_id', 'is_livestream')(self.parse_metadata())
                     if still_is_livestream is False:
                         ic("Exiting since livestream is finished")
                         print("LIVESTREAM IS FINISHED")
