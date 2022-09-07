@@ -22,5 +22,9 @@ class TranscriptManager(unittest.TestCase):
         self.fd_rtt.process_video("https://www.youtube.com/watch?v=u88EmaRrIlU&ab_channel=BNNBloomberg")
         self.assertTrue(True)
 
+    def test_get_channel(self, mock_request):
+        channelName = self.fd_rtt.get_channel_from_name()
+        self.assertEqual(channelName, "EpicEconomist")
+
 if __name__ == '__main__':
     unittest.main()

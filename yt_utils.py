@@ -132,7 +132,8 @@ def get_video_metadata(video_url: str = "https://www.youtube.com/watch?v=21X5lGl
 
 if __name__ == "__main__":
     start = time.time()
-    get_video_metadata()
+    data = get_video_metadata("https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals")
+    print(data)
     end = time.time()
     print(end - start)
     # main()
