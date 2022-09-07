@@ -34,8 +34,9 @@ class FD_RTT:
         table_name = os.getenv("TABLE_NAME")
         if table_name is None:
             table_name = input_args.get("table_name")
-        else:
+        if table_name is None:
             table_name = self.get_channel_from_name()
+        # fallback to video_id
         if table_name == "" or table_name is None:
             try:
                 ic("Grabbing table name from video_id")
@@ -46,7 +47,7 @@ class FD_RTT:
                 ic("Error getting video id")
                 self.video_id = ""
         else:
-            ic(f"setting table_name from TABLE_NAME env var: {table_name}")
+            ic(f"setting table_name from TABLE_NAME as: {table_name}")
             self.video_id = table_name
 
         self.db_manager = DB_MANAGER()
