@@ -103,7 +103,7 @@ jobs:
         run: echo ${{ env.PUSH_FILES }}
 
       - name: Step To run on failure
-        if: ${{ failure() }}
+        if: ${{ failure() }} && ${{ env.TERMINATE_LIVESTREAM != 'TRUE' }}
         run: |
           echo "Attempt to dispatch another event"
           python dispatch_another_event.py --youtube_url "${{ github.event.inputs.youtube_url }}" --iteration ${{ github.event.inputs.iteration }}
