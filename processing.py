@@ -9,6 +9,7 @@ import math
 import glob
 import requests
 import ffmpeg
+import whisper
 from utils import ic, writeToLogAndPrint
 
 def get_video_length(video_path: str):
@@ -22,7 +23,6 @@ def get_video_length(video_path: str):
         print(e)
         exit(1)
         return None
-
 
 
 def get_video_from_start(url: str, config: dict):
@@ -46,6 +46,7 @@ def get_video_from_start(url: str, config: dict):
     f'ffmpeg -i "{url}" -t {end} {filename}'
     # ["ffmpeg", "-i", f"'{url}'", "-t", end, "-copy", filename]
     , shell=True, capture_output=True)
+    print("do something here")
     ic(result)
     return result.stdout.decode("utf-8")
 
@@ -149,11 +150,59 @@ def format_seconds(seconds: int):
     seconds %= 60
     return f"{hours}:{minutes}:{seconds}"
 
-def transcribe_audio(filename: str, is_livestream: bool = False):
-    """
-    Transcribe audio using wit.ai
-    """
-    mp3_file = filename.replace(".mp4", ".mp3")
+# think I want model loaded and reused?
+def get_text_from_mp3_whisper(mp3_file: str):
+    model = whisper.load_model("base")
+    # options = whisper.DecodingOptions(language="en", without_timestamps=True)
+    result = model.transcribe(mp3_file)
+    return result
+
+
+def transcribe_audio_whisper(filename: str, is_livestream: bool = False):
+    final_object = {
+        "speech": {
+            "tokens": []
+        },
+        "text": "",
+    }
+    text_bodies = []
+    for count, chunk_name in enumerate(split_vid_into_chunks(filename, is_livestream)):
+        mp3_file = chunk_name.replace(".mp4", ".mp3")
+        print("USING whisper")
+        # load audio and pad/trim it to fit 30 seconds
+        t2_start = time.perf_counter()
+        # try:
+        # iterate through files with _{d} format
+        final_object = {
+            "speech": {
+                "tokens": []
+            },
+            "text": "",
+        }
+        # get text from mp3
+        partial_object = get_text_from_mp3_whisper(chunk_name)
+        text_bodies.append({
+            "text": partial_object.get("text", ""),
+            "count": count,
+            "id": chunk_name,
+        })
+        # except Exception as e:
+        #     ic(f"Error getting text from mp3 for {filename}")
+        #     ic(e)
+        #     return None
+    # make final_object, group by number in _{d} format
+    final_object = {
+        "text": "",
+    }
+    # sort text_bodies by id number in _{d} format
+    text_bodies = sorted(text_bodies, key=lambda k: k['count'])
+    for text_body in text_bodies:
+        final_object["text"] += text_body.get("text", "")
+    # print the recognized text
+    return final_object
+
+# for the new system eventually switch to yield
+def split_vid_into_chunks(filename: str, is_livestream: bool = False, chunk_size: int = 4*60+30):
     try:
         t1_start = time.perf_counter()
         if not is_livestream:
@@ -163,8 +212,8 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
             length_in_secs = float(length_in_secs)
             length_in_secs = math.ceil(length_in_secs)
             ic(length_in_secs)
-            # split into 4 minute 30 second chunks
-            chunk_length = 4 * 60 + 30
+            # split into 2 minute 30 second chunks
+            chunk_length = chunk_size
             # iterate through chunks
             ic()
             for i in range(math.ceil(length_in_secs /chunk_length)):
@@ -176,52 +225,86 @@ def transcribe_audio(filename: str, is_livestream: bool = False):
                 # -vn", filename.replace(".mp4", ".mp3")
                 # todo integrate directly using ffmpeg python binders
                 os.system(f"ffmpeg -y -i {filename} -ss {format_seconds(start)} -t {format_seconds(end)} -vn {chunk_filename}")
+                # should wait until this is done
+                yield chunk_filename
             ic("No chunks to process for video")
                     # convert_mp4_to_mp3(filename)
         else:
             convert_mp4_to_mp3(filename)
+            yield filename
         t2_start = time.perf_counter()
         ic(f"[timing] Converted mp4 to mp3 in {t2_start - t1_start} seconds")
     except Exception as e:
         ic(f"Error converting mp4 to mp3 for {filename}")
         ic(e)
-        return None
+        raise Exception(f"Error converting mp4 to mp3 for {filename}")
 
-    # TODO refactor this logic tommorow to be a specific function
-    try:
+def transcribe_audio_wit(filename: str, is_livestream: bool = False):
+    """
+    Transcribe audio using wit.ai
+    """
+    final_object = {
+        "speech": {
+            "tokens": []
+        },
+        "text": "",
+    }
+
+    text_bodies = []
+    for count, chunk_name in enumerate(split_vid_into_chunks(filename, is_livestream)):
+        # get text from mp3
+        t2_start = time.perf_counter()
+        # TODO refactor this logic tommorow to be a specific function
+        mp3_name = chunk_name.replace(".mp4", ".mp3")
         if not is_livestream:
             # iterate through files with _{d} format
-            final_object = {
-                "speech": {
-                    "tokens": []
-                },
-                "text": "",
-            }
-            filename_no_ext = filename.replace(".mp4", "")
-            for file in glob.glob(f"{filename_no_ext}_*.mp3"):  
-                # get text from mp3
-                partial_object = get_text_from_mp3(file)
-                # append to final object
-                final_object["speech"]["tokens"] = final_object["speech"]["tokens"] + \
-                     partial_object["speech"]["tokens"]
-                final_object["text"] += partial_object["text"]
-            return final_object
+            # get text from mp3
+            partial_object = get_text_from_mp3(mp3_name)
+            # append to final object
+            text_bodies.append({
+                "text": partial_object.get("text", ""),
+                "id": chunk_name,
+                "count": count,
+            })
+            final_object["text"] += partial_object["text"]
         else:
-            data = get_text_from_mp3(mp3_file)
+            # for livestreams we should only have one file
+            data = get_text_from_mp3(mp3_name)
             t2_end = time.perf_counter()
-            ic(f"[timing] Got text from mp3 in {t2_end - t2_start} seconds")
-            return data
-    except Exception as e:
-        ic(f"Error getting text from mp3 for {filename}")
-        ic(e)
-        return None
+            text_bodies.append({
+                "text": data.get("text", ""),
+                "id": chunk_name,
+                "count": count,
+            })
+
+    text_bodies = sorted(text_bodies, key=lambda k: k['count'])
+    for text_body in text_bodies:
+        final_object["text"] += text_body.get("text", "")
+    return final_object
 
 def main():
     # data = get_text_from_mp3("livestream5.mp3")
     # print(data)
     # read file from livestream9.json
     # duration = get_video_length("livestream01.mp4")
-    get_text_from_mp3("dp8PhLsUcFE_0.mp3")
+    t1_start = time.perf_counter()
+    data = transcribe_audio_whisper("8F5Mc5bKEdc.mp4", False)
+    # output to test text file
+    with open("whispers.json", "w") as f:
+        f.write(json.dumps(data))
+    t1_end = time.perf_counter()
+    ic(f"[timing] Transcribed audio in {t1_end - t1_start} seconds")
+    # print it in minutes
+    ic(f"[timing] Transcribed audio in {(t1_end - t1_start) / 60} minutes")
+    
+    # t2 for the other transcription
+    t2_start = time.perf_counter()
+    wit_ai = transcribe_audio_wit("8F5Mc5bKEdc.mp4", False)
+    t2_end = time.perf_counter()
+    ic(f"[timing] Transcribed audio in {t2_end - t2_start} seconds")
+    ic(f"[timing] Transcribed audio in {(t2_end - t2_start) / 60} minutes")
+    with open("witai.json", "w") as f:
+        f.write(json.dumps(wit_ai))
     # with open("livestream9.json") as f:
     #     data = f.readlines()
     #     data = "".join(data)

@@ -4,7 +4,7 @@ from threading import Thread
 import time
 import json
 from operator import itemgetter
-from processing import get_video_from_start, transcribe_audio
+from processing import get_video_from_start, transcribe_audio_wit, transcribe_audio_whisper
 from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time, append_to_github_actions
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
@@ -31,6 +31,7 @@ class FD_RTT:
         }
         self.exit_on_video = input_args.get("exit_on_video", True)
         self.metadata = get_video_metadata(self.video_url)
+        self.curr_errors = 0
         table_name = os.getenv("TABLE_NAME")
         if table_name is None:
             table_name = input_args.get("table_name")
@@ -68,6 +69,11 @@ class FD_RTT:
             global_iteration = 0
 
         self.global_iteration = global_iteration
+
+        self.save_to_db = input_args.get("save_to_db", True)
+
+        self.transcribe_tool = input_args.get("transcribe_tool", "whisper")
+
         # add in video format here
     def get_channel_from_name(self):
         metadata = self.metadata
@@ -87,7 +93,12 @@ class FD_RTT:
         filename = data.get("filename", "")
         is_livestream = data.get("is_livestream", False)
         ic(f"Transcribing... {filename}")
-        data = transcribe_audio(filename, is_livestream)
+
+        # read config, see if we want to upload to db
+        if self.transcribe_tool == "whisper":
+            data = transcribe_audio_whisper(filename, is_livestream)
+        else:
+            data = transcribe_audio_wit(filename, is_livestream)
         if data is not None:
             # save to json file, replace .mp3 with .json
             partial_output = filename.replace(".mp4", ".json")
@@ -215,7 +226,10 @@ class FD_RTT:
 
                     # transcribe audio
                     self.transcribe({"filename": filename, "is_livestream": is_livestream})
+                    print("ARE YOU EVEN WORKING HERE")
+                    self.stats["iterations"] = MAX_ITERATIONS
                     break
+                
                 ic(f'Iteration: {self.stats.get("iterations", 0)}')
                 ic(format_url)
                 iterations = self.stats.get("iterations", 0)
@@ -229,7 +243,13 @@ class FD_RTT:
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
                 background_thread.start()
             except Exception as ex:
+                # any error, just goes into endless loop
                 ic(ex)
+                self.curr_errors += 1
+                if self.curr_errors > 10:
+                    ic("Too many errors, exiting")
+                    break
+                break
             finally:
                 self.stats["iterations"] += 1
                 start_time = self.stats["start_time"]
@@ -270,7 +290,9 @@ if __name__ == "__main__":
     # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
     parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
     parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=False)
-    # table name
+    # save_to_db
+    parser.add_argument('--save_to_db', '-stdb', help='save to db', default=True)
+    
     args = parser.parse_args()
     # ensure WIT_AI_TOKEN is set
     ic("Running main")
@@ -280,5 +302,8 @@ if __name__ == "__main__":
     dict_args = {
         "url": args.url,
         "exit_on_video": args.exit_for_videos,
+        "save_to_db": args.save_to_db,
     }
     main(dict_args)
+
+    # https://www.youtube.com/watch?v=8F5Mc5bKEdc&ab_channel=CNBCTelevision
