@@ -5,4 +5,4 @@ icecream
 mysql-connector-python
 beautifulsoup4
 sentry_sdk
-whispers
+git+https://github.com/openai/whisper.git 
