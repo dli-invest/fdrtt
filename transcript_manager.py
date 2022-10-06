@@ -82,9 +82,7 @@ class FD_RTT:
         uploader = metadata.get("uploader", "")
         if uploader == "Yahoo Finance":
             return "YahooFinance"
-        if uploader_id == "Bloomberg":
-            return "Bloomberg"
-        return channel
+        return "Bloomberg" if uploader_id == "Bloomberg" else channel
 
     def transcribe(self, data: dict):
         """
