@@ -33,14 +33,14 @@ def transcribe_video(url: str):
     with open(partial_output, "w", encoding="utf-8", errors="ignore") as f:
         f.write(json.dumps(data, indent=0))
 
-    data = {}
     # adjust runtime based on iteration if available
     # split data content into chunks of 1900 characters
     chunks = [data['content'][i:i+CHUNK_SIZE] for i in range(0, len(data['content']), CHUNK_SIZE)]
     for chunk in chunks:
-        data['content'] = chunk
+        ds_data = {}
+        ds_data['content'] = chunk
         try:
-            send_discord_msg(data)
+            send_discord_msg(ds_data)
         except Exception as e:
             return
 
