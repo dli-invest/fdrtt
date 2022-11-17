@@ -38,6 +38,7 @@ def transcribe_video(url: str):
     }
     # adjust runtime based on iteration if available
     # split data content into chunks of 1900 characters
+    CHUNK_SIZE = 1900
     chunks = [ds_data['content'][i:i+CHUNK_SIZE] for i in range(0, len(ds_data['content']), CHUNK_SIZE)]
     for chunk in chunks:
         try:
