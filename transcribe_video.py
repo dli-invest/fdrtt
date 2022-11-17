@@ -22,9 +22,8 @@ def download_file_from_url(url, filename):
 def transcribe_video(url: str):
     # check if url is a local path or a url
     filename = url
-    if url.startswith("http"):
-        # get video id
-        download_file_from_url(url, "video.mp4")
+    if filename.startswith("http"):
+        download_file_from_url(filename, "video.mp4")
         filename = "video.mp4"
 
     data = transcribe_audio_whisper(filename, False)
@@ -43,11 +42,6 @@ def transcribe_video(url: str):
             send_discord_msg(data)
         except Exception as e:
             return
-
-    
-    # load file
-    # load file
-    pass
 
 if __name__ == "__main__":
     # todo add argparser
