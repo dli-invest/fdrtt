@@ -152,7 +152,7 @@ def format_seconds(seconds: int):
 
 # think I want model loaded and reused?
 def get_text_from_mp3_whisper(mp3_file: str):
-    model = whisper.load_model("base")
+    model = whisper.load_model("tiny")
     # options = whisper.DecodingOptions(language="en", without_timestamps=True)
     result = model.transcribe(mp3_file)
     return result
