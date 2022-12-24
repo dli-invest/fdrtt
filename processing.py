@@ -46,7 +46,6 @@ def get_video_from_start(url: str, config: dict):
     f'ffmpeg -i "{url}" -t {end} {filename}'
     # ["ffmpeg", "-i", f"'{url}'", "-t", end, "-copy", filename]
     , shell=True, capture_output=True)
-    print("do something here")
     ic(result)
     return result.stdout.decode("utf-8")
 
@@ -168,7 +167,6 @@ def transcribe_audio_whisper(filename: str, is_livestream: bool = False):
     text_bodies = []
     for count, chunk_name in enumerate(split_vid_into_chunks(filename, is_livestream)):
         mp3_file = chunk_name.replace(".mp4", ".mp3")
-        print("USING whisper")
         # load audio and pad/trim it to fit 30 seconds
         t2_start = time.perf_counter()
         # try:
