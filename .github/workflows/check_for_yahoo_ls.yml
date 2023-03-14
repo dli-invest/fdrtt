@@ -42,4 +42,5 @@ jobs:
         # main branch git
         # if: github.ref == 'refs/heads/main'
         run: |
-          python livestream_scrapper.py
+          ls
+        # python livestream_scrapper.py
