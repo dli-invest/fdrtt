@@ -8,14 +8,14 @@ from processing import get_video_from_start, transcribe_audio_wit, transcribe_au
 from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time, append_to_github_actions
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
-
+import google.generativeai as genai
 try:
     MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "50")
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
 CHUNK_SIZE = 1900
-VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
+VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 60
 # free delayed real time transcription
 
 class FD_RTT:
@@ -91,7 +91,7 @@ class FD_RTT:
             takes video file and transcribes it
         """
         filename = data.get("filename", "")
-        is_livestream = data.get("is_livestream", False)
+        is_livestream = data.get("is_livestream", True)
         ic(f"Transcribing... {filename}")
 
         # read config, see if we want to upload to db
@@ -237,7 +237,7 @@ class FD_RTT:
                 filename = filename.replace("-", "")
 
                 get_video_from_start(format_url, {
-                    "end": "0:04:30",
+                    "end": "0:05:00",
                     "filename": filename,
                 })
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
@@ -278,6 +278,49 @@ class FD_RTT:
             send_discord_msg(total_data)
         return None
 
+    def summarize_transcriptions_periodically(video_id, gemini_api_key):
+        import datetime
+        """
+        Background thread that periodically summarizes transcriptions from JSON files.
+
+        Args:
+            video_id (str): The video ID to filter JSON files.
+            gemini_api_key (str): Your Gemini API key.
+        """
+        genai.configure(api_key=gemini_api_key)
+        model = genai.GenerativeModel('gemini-pro')
+
+        try:
+            now = datetime.datetime.now()
+            one_hour_ago = now - datetime.timedelta(hours=1)
+            all_text = ""
+
+            for filename in os.listdir("."):
+                if filename.endswith(f"{video_id}.json") and os.path.isfile(filename):
+                    file_modified_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+                    if file_modified_time > one_hour_ago:
+                        try:
+                            with open(filename, "r", encoding="utf-8") as f:
+                                data = json.load(f)
+                                all_text += data.get("text", "") + " "
+                        except Exception as e:
+                            ic(f"Error reading {filename}: {e}")
+
+            if all_text:
+                prompt = f"Summarize the following text:\n\n{all_text}"
+                try:
+                    response = model.generate_content(prompt)
+                    summary = response.text
+                    data = {"content": f"**Summary of recent transcriptions:**\n{summary}"}
+                    send_discord_msg(data)
+                except Exception as gemini_error:
+                    ic(f"Gemini API error: {gemini_error}")
+            else:
+                ic("No recent transcriptions found.")
+
+        except Exception as overall_error:
+            ic(f"Error summarizing transcriptions: {overall_error}")
+
 def main(params: dict):
     ic("Trying to initialize")
     fd_rtt = FD_RTT(params, {})
@@ -288,7 +331,7 @@ if __name__ == "__main__":
     # argparser with one arugment url for youtube videos
     parser = argparse.ArgumentParser(description='Process livestream or audio for youtube video')
     # parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=dp8PhLsUcFE&ab_channel=BloombergQuicktake%3AOriginals')
-    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=21X5lGlDOfg&ab_channel=NASA')
+    parser.add_argument('--url', '-id', help='video id', default='https://www.youtube.com/watch?v=tZT2MCYu6Zw')
     parser.add_argument('--exit_for_videos', '-efv', help='exit for videos, or non livestreams', default=False)
     # save_to_db
     parser.add_argument('--save_to_db', '-stdb', help='save to db', default=True)

@@ -59,7 +59,7 @@ def get_video_from_start(url: str, config: dict):
         ffmpeg
         .input(url, t=end)
         .output(filename)
-        .run()
+        .run(quiet=True)
     )
 
 # wit ai process integration
@@ -255,7 +255,7 @@ def split_vid_into_chunks(filename: str, is_livestream: bool = False, chunk_size
         else:
             # is this even needed for whispers as the library may be able todo it
             # TODO figure this out later
-            convert_mp4_to_mp3(filename)
+            convert_to_mp4_to_mp3(filename)
             yield filename
         t2_start = time.perf_counter()
         ic(f"[timing] Converted mp4 to mp3 in {t2_start - t1_start} seconds")
