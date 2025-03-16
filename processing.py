@@ -25,7 +25,7 @@ def get_video_length(video_path: str):
         return None
 
 
-def get_video_from_start(url: str, config: dict):
+def get_video_from_start_legacy(url: str, config: dict):
     """
     Get video from start time.
     """
@@ -49,9 +49,22 @@ def get_video_from_start(url: str, config: dict):
     ic(result)
     return result.stdout.decode("utf-8")
 
+def get_video_from_start(url: str, config: dict):
+    """
+    Get video from start time.
+    """
+    filename = config.get("filename", "livestream01.mp4")
+    end = config.get("end", "00:00:10")
+    (
+        ffmpeg
+        .input(url, t=end)
+        .output(filename)
+        .run()
+    )
+
 # wit ai process integration
 
-def convert_mp4_to_mp3(filename: str):
+def convert_mp4_to_mp3_legacy(filename: str):
     """
     Convert mp4 to mp3 using ffmpeg
     """
@@ -64,6 +77,18 @@ def convert_mp4_to_mp3(filename: str):
     ic(result)
     return result
 
+def convert_to_mp4_to_mp3(filename: str):
+    """
+    Convert mp4 to mp3 using ffmpeg
+    """
+    ic("Converting mp4 to mp3")
+    mp4_filename = filename.replace(".mp4", ".mp3")
+    (
+        ffmpeg
+        .input(filename, vn=None)
+        .output(mp4_filename)
+        .run()
+    )
 
 # parse all the partial json responses and attempt to find the last one
 
@@ -228,6 +253,8 @@ def split_vid_into_chunks(filename: str, is_livestream: bool = False, chunk_size
             ic("No chunks to process for video")
                     # convert_mp4_to_mp3(filename)
         else:
+            # is this even needed for whispers as the library may be able todo it
+            # TODO figure this out later
             convert_mp4_to_mp3(filename)
             yield filename
         t2_start = time.perf_counter()

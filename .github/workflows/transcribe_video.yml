@@ -68,6 +68,7 @@ jobs:
         run: |
           echo "ITERATION=${{ github.event.inputs.iteration }}" >> $GITHUB_ENV
           echo "YOUTUBE_URL=${{ github.event.inputs.youtube_url}}" >> $GITHUB_ENV
+          echo ${{github.event.inputs.youtube_url}}
       
       - name: set table name if available
         if: "${{ github.event.inputs.table_name != '' }}"
