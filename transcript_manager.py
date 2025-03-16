@@ -17,8 +17,14 @@ try:
 except Exception as e:
     print(e)
 MODEL = 'gemini-2.0-flash'
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if gemini_api_key is None:
+    ic("No gemini api key found")
+    exit(1)
+
+client = genai.Client(api_key=gemini_api_key)
 CHUNK_SIZE = 1900
-VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 60
+VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 30
 # free delayed real time transcription
 
 class FD_RTT:
@@ -215,6 +221,13 @@ class FD_RTT:
 
         while self.stats.get("iterations", 0) < MAX_ITERATIONS:
             try:
+                # try:
+                ic("Trying to summarize data")
+                self.summarize_transcriptions()
+                exit(1)
+                # except Exception as ex:
+                #     ic(ex)
+                #     self.curr_errors += 1
                 # grab format from formats using format_id
                 selected_format = [f for f in formats if f.get("format_id", "") == str(selected_id)][0]
                 format_url = selected_format.get("url", "")
@@ -241,11 +254,12 @@ class FD_RTT:
                 filename = filename.replace("-", "")
 
                 get_video_from_start(format_url, {
-                    "end": "0:05:00",
+                    "end": "0:04:30",
                     "filename": filename,
                 })
                 background_thread = Thread(target=self.transcribe, args=({"filename": filename, "is_livestream": is_livestream},))
                 background_thread.start()
+           
             except Exception as ex:
                 # any error, just goes into endless loop
                 ic(ex)
@@ -282,42 +296,46 @@ class FD_RTT:
             send_discord_msg(total_data)
         return None
 
-    def summarize_transcriptions(self, gemini_api_key):
-        client = genai.Client(api_key=gemini_api_key)
+    def summarize_transcriptions(self):
+
         try:
             now = datetime.datetime.now()
             one_hour_ago = now - datetime.timedelta(hours=1)
             all_text = ""
-            new_files_processed = False # Flag
-            json_files = [f for f in os.listdir(".") if re.match(".json$", f)]
+            new_files_processed = False  # Flag
+            files_to_process = [] # Files to be sent to gemini.
+            json_files = [f for f in os.listdir(".") if f.endswith(".json")]
+            ic("json files", json_files)
             for filename in json_files:
-                # get all files ending in json
-                if re.match(rf"{self.video_id}\d+\.json$", filename) and os.path.isfile(filename):
-                    file_modified_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
-                    if file_modified_time > one_hour_ago and filename not in self.processed_files:
-                        try:
-                            with open(filename, "r", encoding="utf-8") as f:
-                                data = json.load(f)
-                                all_text += data.get("text", "") + " "
-                            self.processed_files.add(filename) #Mark file as processed.
+                file_modified_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+                if file_modified_time > one_hour_ago and filename not in self.processed_files:
+                    try:
+                        with open(filename, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            all_text += data.get("text", "") + " "
+                            files_to_process.append(filename) # Add to list to be processed.
                             new_files_processed = True
-                        except Exception as e:
-                            ic(f"Error reading {filename}: {e}")
-            else:
-                ic("no json files present")
-
-            if all_text and new_files_processed:
+                    except Exception as e:
+                        ic(f"Error reading {filename}: {e}")
+            if all_text and new_files_processed and len(files_to_process) >= 5:
                 prompt = f"Summarize the following text:\n\n{all_text}"
                 try:
+                    ic(f"[summarize_transcriptions]: processing {len(files_to_process)} files")
                     response = client.models.generate_content(
                         model=MODEL,
                         contents=prompt,
                     )
                     summary = response.text
-                    if summary not in self.previous_summaries: # check for duplicate summaries.
+                    ic(f"[summarize_transcriptions]: Summary: {summary}")
+                    if summary not in self.previous_summaries:
                         self.previous_summaries.append(summary)
                         data = {"content": f"**Summary of recent transcriptions:**\n{summary}"}
                         send_discord_msg(data, "DISCORD_AI_TRADING_WEBHOOK")
+
+                        for filename in files_to_process:
+                            ic(f"Sending {filename} to gemini api")
+                            self.processed_files.add(filename) # add processed files only after gemini api is called.
+
                     else:
                         ic("Duplicate summary, not sending to discord.")
                 except Exception as gemini_error:
@@ -343,26 +361,8 @@ def main(params: dict):
     ic("Trying to initialize")
     fd_rtt = FD_RTT(params, {})
     ic("Attempting to run video")
-    # want to start transcription parsing
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key:
-        ic("Starting ai summary thread")
-        summary_thread = Thread(target=fd_rtt.summarize_transcriptions_periodically, args=(gemini_key,))
-        summary_thread.daemon = True
-        summary_thread.start()
-    else:
-        ic("Starting ai summary thread")
-        ic("GEMINI_API_KEY not set. Summarization will not run.")
     fd_rtt.process_video(params.get("url"))
 
-    # eend summary thread if it exists
-    if gemini_key:
-        summary_thread.join()
-        ic("Summary thread joined")
-
-
-
-    exit(1)
 
 
 

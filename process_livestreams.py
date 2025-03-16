@@ -1,16 +1,17 @@
 from googleapiclient.discovery import build
 import os
 from dotenv import load_dotenv
+load_dotenv()
 from transcript_manager import main as transcript_parser
 
 def main():
-    load_dotenv()
+
     YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
     # Step 2: Find the channel ID for DW News
     channel_response = youtube.search().list(
-        q='@dwnews',
+        q='@CBCNews',
         type='channel',
         part='id,snippet',
         maxResults=1
