@@ -112,7 +112,6 @@ def main(url: str = "https://www.youtube.com/watch?v=enGbgVLMuw4&ab_channel=Yaho
     """
     formats = get_video_formats(url)
     data = parse_raw_format_str(formats.stdout.decode("utf-8"))
-    print(data)
     # result = get_video_link(url, data[0])
     # ic(result)
     return
@@ -128,6 +127,7 @@ def get_video_metadata(video_url: str = "https://www.youtube.com/watch?v=21X5lGl
         video_title = info_dict.get('title', None)
         uploader_id = info_dict.get('uploader_id', None)
         ic(f"[youtube] {video_title}: {uploader_id}")
+
     return info_dict
 
 if __name__ == "__main__":

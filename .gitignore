@@ -10,3 +10,5 @@ sample.txt
 .coverage
 coverage.xml
 results.csv
+
+logs/*.txt

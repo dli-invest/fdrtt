@@ -3,17 +3,20 @@ import argparse
 from threading import Thread
 import time
 import json
+import re
+import datetime
 from operator import itemgetter
 from processing import get_video_from_start, transcribe_audio_wit, transcribe_audio_whisper
 from utils import get_video_id_from_ytube_url, ic, send_discord_msg, format_time, append_to_github_actions
 from yt_utils import get_video_metadata, youtube_livestream_codes, youtube_mp4_codes
 from database import DB_MANAGER
-import google.generativeai as genai
+from google import genai
 try:
-    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "50")
+    MAX_ITERATIONS = os.getenv("MAX_ITERATIONS", "10")
     MAX_ITERATIONS = int(MAX_ITERATIONS)
 except Exception as e:
     print(e)
+MODEL = 'gemini-2.0-flash'
 CHUNK_SIZE = 1900
 VIDEO_CHUNK_LENGTH_IN_SECS = 4 * 60 + 60
 # free delayed real time transcription
@@ -73,7 +76,8 @@ class FD_RTT:
         self.save_to_db = input_args.get("save_to_db", True)
 
         self.transcribe_tool = input_args.get("transcribe_tool", "whisper")
-
+        self.processed_files = set()  # Track files already processed
+        self.previous_summaries = [] # Track previous summaries
         # add in video format here
     def get_channel_from_name(self):
         metadata = self.metadata
@@ -278,54 +282,89 @@ class FD_RTT:
             send_discord_msg(total_data)
         return None
 
-    def summarize_transcriptions_periodically(video_id, gemini_api_key):
-        import datetime
-        """
-        Background thread that periodically summarizes transcriptions from JSON files.
-
-        Args:
-            video_id (str): The video ID to filter JSON files.
-            gemini_api_key (str): Your Gemini API key.
-        """
-        genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel('gemini-pro')
-
+    def summarize_transcriptions(self, gemini_api_key):
+        client = genai.Client(api_key=gemini_api_key)
         try:
             now = datetime.datetime.now()
             one_hour_ago = now - datetime.timedelta(hours=1)
             all_text = ""
-
-            for filename in os.listdir("."):
-                if filename.endswith(f"{video_id}.json") and os.path.isfile(filename):
+            new_files_processed = False # Flag
+            json_files = [f for f in os.listdir(".") if re.match(".json$", f)]
+            for filename in json_files:
+                # get all files ending in json
+                if re.match(rf"{self.video_id}\d+\.json$", filename) and os.path.isfile(filename):
                     file_modified_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
-                    if file_modified_time > one_hour_ago:
+                    if file_modified_time > one_hour_ago and filename not in self.processed_files:
                         try:
                             with open(filename, "r", encoding="utf-8") as f:
                                 data = json.load(f)
                                 all_text += data.get("text", "") + " "
+                            self.processed_files.add(filename) #Mark file as processed.
+                            new_files_processed = True
                         except Exception as e:
                             ic(f"Error reading {filename}: {e}")
+            else:
+                ic("no json files present")
 
-            if all_text:
+            if all_text and new_files_processed:
                 prompt = f"Summarize the following text:\n\n{all_text}"
                 try:
-                    response = model.generate_content(prompt)
+                    response = client.models.generate_content(
+                        model=MODEL,
+                        contents=prompt,
+                    )
                     summary = response.text
-                    data = {"content": f"**Summary of recent transcriptions:**\n{summary}"}
-                    send_discord_msg(data)
+                    if summary not in self.previous_summaries: # check for duplicate summaries.
+                        self.previous_summaries.append(summary)
+                        data = {"content": f"**Summary of recent transcriptions:**\n{summary}"}
+                        send_discord_msg(data, "DISCORD_AI_TRADING_WEBHOOK")
+                    else:
+                        ic("Duplicate summary, not sending to discord.")
                 except Exception as gemini_error:
                     ic(f"Gemini API error: {gemini_error}")
-            else:
-                ic("No recent transcriptions found.")
+            elif not new_files_processed:
+                ic("No new transcriptions found.")
 
         except Exception as overall_error:
             ic(f"Error summarizing transcriptions: {overall_error}")
+        pass
+
+    def summarize_transcriptions_periodically(self, gemini_api_key):
+        """
+        Background thread that periodically summarizes transcriptions from JSON files.
+
+        Tracks used files and LLM responses.
+        """
+        # while True:
+        self.summarize_transcriptions(gemini_api_key)
+        # time.sleep(60 * 15)  # Check every 15 minutes
 
 def main(params: dict):
     ic("Trying to initialize")
     fd_rtt = FD_RTT(params, {})
     ic("Attempting to run video")
+    # want to start transcription parsing
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        ic("Starting ai summary thread")
+        summary_thread = Thread(target=fd_rtt.summarize_transcriptions_periodically, args=(gemini_key,))
+        summary_thread.daemon = True
+        summary_thread.start()
+    else:
+        ic("Starting ai summary thread")
+        ic("GEMINI_API_KEY not set. Summarization will not run.")
     fd_rtt.process_video(params.get("url"))
+
+    # eend summary thread if it exists
+    if gemini_key:
+        summary_thread.join()
+        ic("Summary thread joined")
+
+
+
+    exit(1)
+
+
 
 if __name__ == "__main__":
     # argparser with one arugment url for youtube videos

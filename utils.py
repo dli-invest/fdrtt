@@ -2,13 +2,23 @@ import os
 import requests
 import logging 
 from icecream import ic
+import datetime
+
+def get_log_file_path():
+    """Returns the path to the log file, creating the directory if needed."""
+    log_dir = "logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    now = datetime.datetime.now()
+    date_string = now.strftime("%Y-%m-%d")
+    return os.path.join(log_dir, f"log_{date_string}.txt")
 
 
-
-LOG_FILE = "log.txt"
 def writeToLog(s):
     # write to sentry   
     # write to log file
+    
+    LOG_FILE = get_log_file_path()
     logging.warning(s)
     # colorizedStderrPrint(s)
     with open(LOG_FILE, "a", errors="ignore") as f:
@@ -19,8 +29,8 @@ def writeToLog(s):
 ic.configureOutput(outputFunction=writeToLog)
 
 # dont need test cases for this
-def send_discord_file(filename = None, file = None):
-    url = os.getenv("DISCORD_WEBHOOK")
+def send_discord_file(filename = None, file = None, env_var = "DISCORD_WEBHOOK"):
+    url = os.getenv(env_var)
     if url is None:
         print('DISCORD_WEBHOOK Missing')
     files = {'file': (filename, file, 'application/json')}
@@ -29,8 +39,8 @@ def send_discord_file(filename = None, file = None):
             url, files=files
         )
 
-def send_discord_msg(data):
-    url = os.getenv("DISCORD_WEBHOOK")
+def send_discord_msg(data, env_var = "DISCORD_WEBHOOK"):
+    url = os.getenv(env_var)
     if url is None:
         print('DISCORD_WEBHOOK Missing')
     # TODO figure out how to post to threads

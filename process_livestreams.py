@@ -10,12 +10,11 @@ def main():
 
     # Step 2: Find the channel ID for DW News
     channel_response = youtube.search().list(
-        q='dwnews',
+        q='@dwnews',
         type='channel',
         part='id,snippet',
         maxResults=1
     ).execute()
-
     if not channel_response['items']:
         print("Channel not found.")
         return
